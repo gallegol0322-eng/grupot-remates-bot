@@ -2,3 +2,5 @@ Flask
 gunicorn
 gspread
 oauth2client
+joblib
+scikit-learn
