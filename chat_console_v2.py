@@ -399,9 +399,6 @@ def chatbot_answer(msg):
 # CONSOLA
 # -----------------------------
 if __name__ == "__main__":
-    print("✨ ¡Hola! Qué alegría tenerte por aquí ✨")
-    print("👋 Somos Grupo T, vimos que tienes interés sobre nosotros ¿Deseas *aprender* o deseas *invertir*?")
-    print("en cualquier momento escribe la palabra *asesor* para obtener un link directo con un asesor")
     while True:
         msg = input("Tú: ").strip()
         if msg.lower() in ["salir", "exit"]:
