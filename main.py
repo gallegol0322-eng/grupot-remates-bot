@@ -5,9 +5,7 @@ import re
 
 from flask import Flask, request, jsonify
 
-import torch
 import joblib
-from sentence_transformers import SentenceTransformer
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 
@@ -230,28 +228,9 @@ def extract_phone(text):
 intent_model = joblib.load("models/intent_model.joblib")
 vectorizer = joblib.load("models/intent_vectorizer.joblib")
 
-print("Cargando modelos de incrustaciones semánticas...")
-emb = torch.load("semantic_embeddings.pt")
-model_sem = SentenceTransformer("all-MiniLM-L6-v2")
-
+print("Cargando intents y respuestas...")
 with open("intents_v2.json", "r", encoding="utf-8") as f:
     intents = json.load(f)["intents"]
-
-
-# ============================================================
-#  SEMÁNTICA
-# ============================================================
-
-def find_semantic(text):
-    q = model_sem.encode(text, convert_to_tensor=True)
-    scores = torch.matmul(q, emb["sentence_embeddings"].T)
-    idx = torch.argmax(scores).item()
-    tag = emb["mapping"][idx]
-
-    for intent in intents:
-        if intent["tag"] == tag:
-            return intent
-    return None
 
 
 # ============================================================
@@ -407,11 +386,7 @@ def chatbot_answer(user_id, msg):
 
             return resp
 
-    sem = find_semantic(msg)
-    if sem:
-        state["last_action"] = sem.get("next_action")
-        return sem["responses"][0]
-
+    # Ya no hay semántica, si no encuentra intent:
     return "No entendí muy bien, ¿podrías repetirlo?"
 
 
@@ -454,7 +429,7 @@ def webhook():
 
         respuesta = chatbot_answer(user_id, msg)
 
-        # Puedes adaptar esta estructura a lo que ManyChat espere
+        # Adapta esto a lo que ManyChat espere en el bloque External Request
         return jsonify({
             "respuesta": respuesta
         }), 200
