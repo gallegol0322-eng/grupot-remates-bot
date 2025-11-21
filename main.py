@@ -10,10 +10,8 @@ import os
 
 app = Flask(__name__)
 
-
-
 # ============================================================
-# ESTADO DEL USUARIO (versión igual a chat_console)
+# ESTADO DEL USUARIO
 # ============================================================
 
 user_states = {}
@@ -37,7 +35,7 @@ def reset_state(uid):
 
 
 # ============================================================
-# EXTRACCIÓN DE NOMBRE (igual que tu chat_console)
+# EXTRACCIÓN DE DATOS
 # ============================================================
 
 def extract_name(text):
@@ -59,18 +57,10 @@ def extract_name(text):
     return None
 
 
-# ============================================================
-# EXTRACCIÓN DE CIUDAD (ELIMINADO → ahora devuelve siempre texto)
-# ============================================================
-
 def extract_city(text):
     text = text.strip().title()
     return text if len(text) > 1 else None
 
-
-# ============================================================
-# EXTRACCIÓN DE PRESUPUESTO
-# ============================================================
 
 def extract_budget(text):
     text = text.lower().strip()
@@ -86,10 +76,6 @@ def extract_budget(text):
 
     return None
 
-
-# ============================================================
-# EXTRACCIÓN DE TELÉFONO
-# ============================================================
 
 def extract_phone(text):
     phone = re.sub(r"\D", "", text)
@@ -123,6 +109,7 @@ def find_semantic(text):
     for intent in intents:
         if intent["tag"] == tag:
             return intent
+
     return None
 
 
@@ -133,6 +120,7 @@ def find_semantic(text):
 def confirm_value(state, key, value):
     state["confirming"] = key
     return f"¿Tu {key.title()} es {value}? (sí / no)"
+
 
 def process_confirmation(state, msg):
     msg = msg.lower().strip()
@@ -218,7 +206,7 @@ def handle_action(state, action, msg):
 
 
 # ============================================================
-# CHATBOT PRINCIPAL (idéntico estilo a tu chat_console)
+# LOGICA DEL CHATBOT
 # ============================================================
 
 def chatbot_answer(uid, msg):
@@ -261,7 +249,6 @@ def chatbot_answer(uid, msg):
             state["last_action"] = i.get("next_action")
             resp = i["responses"][0]
 
-            # placeholders
             if "{name}" in resp and state["name"]:
                 resp = resp.replace("{name}", state["name"])
             if "{city}" in resp and state["city"]:
@@ -303,15 +290,9 @@ def webhook():
 
 
 # ============================================================
-# MODO CONSOLA LOCAL
+# INICIO DEL SERVIDOR (RENDER)
 # ============================================================
 
 if __name__ == "__main__":
-    print("Bot local:")
-    while True:
-        t = input("Tú: ")
-        print("Bot:", chatbot_answer("console", t))
-
-
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
