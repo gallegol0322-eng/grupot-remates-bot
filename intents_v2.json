@@ -1,5 +1,7 @@
 {
   "cities": [
+    {
+  "cities": [
     "Abriaquí","Acacías","Acandí","Acevedo","Achí","Agrado",
     "Aguachica","Aguada","Aguadas","Aguazul","Agustín Codazzi",
     "Aipe","Albania","Albania (Caquetá)","Albania (Santander)","Albán",
@@ -106,3 +108,51 @@
     }
   ]
 }
+
+  ],
+
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["hola","hola que tal","buenos dias","buenas tardes","buenas noches","buen dia","que mas","holaa","ey","hey","que onda"],
+      "responses": ["Hola, regalame tu primer nombre y primer apellido"],
+      "next_action": "save_name"
+    },
+
+    {
+      "tag": "goodbye",
+      "patterns": ["adios","nos vemos","hasta luego","chao","me voy","bye"],
+      "responses": ["¡Hasta luego!","¡Que tengas un excelente día!"],
+      "next_action": ""
+    },
+
+    {
+      "tag": "ask_how_are_you",
+      "patterns": ["como estas","como te va","todo bien","que tal estas"],
+      "responses": ["¡Muy bien! Gracias por preguntar 😊","Estoy excelente 😄"],
+      "next_action": ""
+    },
+
+    {
+      "tag": "thanks",
+      "patterns": ["gracias","muchas gracias","te agradezco","mil gracias"],
+      "responses": ["¡Con gusto! 😊 un asesor se comunicará con usted"],
+      "next_action": ""
+    },
+
+    {
+      "tag": "ask_name",
+      "patterns": ["como te llamas","cual es tu nombre","quien eres","como te puedo llamar"],
+      "responses": ["Soy RematBot 😊 ¿Y tú cómo te llamas?"],
+      "next_action": "save_name"
+    },
+
+    {
+      "tag": "info_remates",
+      "patterns": ["quiero informacion de remates","explicame los remates","que es un remate","como funcionan los remates","quiero aprender"],
+      "responses": ["Los remates permiten comprar propiedades con descuentos del 30% al 70%. ¿Quieres ver oportunidades disponibles?"],
+      "next_action": "ask_city"
+    }
+  ]
+}
+
