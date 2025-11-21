@@ -1,13 +1,8 @@
-# ---- Usar Python 3.10 (slim para tamaño pequeño) ----
+# ---- Usar Python 3.10 ----
 FROM python:3.10-slim
 
 # ---- Crear directorio de trabajo ----
 WORKDIR /app
-
-# ---- Instalar dependencias del sistema necesarias para Torch / SciPy ----
-RUN apt-get update && \
-    apt-get install -y build-essential gcc g++ git && \
-    apt-get clean
 
 # ---- Copiar requirements ----
 COPY requirements.txt .
