@@ -7,7 +7,7 @@ from clean_text import clean_text
 from sentence_transformers import SentenceTransformer
 from google_sheets import guardar_en_google_sheets
 import os
-from flask import Flask
+
 
 app = Flask(__name__)
 
@@ -319,4 +319,5 @@ if __name__ == "__main__":
     while True:
         t = input("Tú: ")
         print("Bot:", chatbot_answer("console", t))
+
 
