@@ -11,6 +11,12 @@ import os
 
 app = Flask(__name__)
 
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    data = request.json
+    print("Webhook recibido:", data)
+    return jsonify({"status": "ok"})
+
 @app.route("/")
 def home():
     return "Bot online!"
@@ -18,7 +24,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
 
 # ============================================================
 # ESTADO DEL USUARIO (versión igual a chat_console)
@@ -319,5 +324,6 @@ if __name__ == "__main__":
     while True:
         t = input("Tú: ")
         print("Bot:", chatbot_answer("console", t))
+
 
 
