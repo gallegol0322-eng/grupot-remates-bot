@@ -399,6 +399,7 @@ def chatbot_answer(msg):
 # CONSOLA
 # -----------------------------
 if __name__ == "__main__":
+
     while True:
         msg = input("Tú: ").strip()
         if msg.lower() in ["salir", "exit"]:
