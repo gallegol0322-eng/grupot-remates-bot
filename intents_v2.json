@@ -1,0 +1,190 @@
+{
+  "intents": [
+
+    {
+      "tag": "greeting",
+      "patterns": [
+        "hola",
+        "hola que tal",
+        "buenos dias",
+        "buenas tardes",
+        "buenas noches",
+        "buen dia",
+        "que mas",
+        "holaa",
+        "ey",
+        "hey",
+        "que onda"
+      ],
+      "responses": [
+        "Hola, regalame tu primer nombre y primer apellido"
+      ],
+      "next_action": "save_name"
+    },
+
+    {
+      "tag": "goodbye",
+      "patterns": [
+        "adios",
+        "nos vemos",
+        "hasta luego",
+        "chao",
+        "me voy",
+        "bye"
+      ],
+      "responses": [
+        "¡Hasta luego!",
+        "¡Que tengas un excelente día!"
+      ],
+      "next_action": ""
+    },
+
+    {
+      "tag": "ask_how_are_you",
+      "patterns": [
+        "como estas",
+        "como te va",
+        "todo bien",
+        "que tal estas"
+      ],
+      "responses": [
+        "¡Muy bien! Gracias por preguntar 😊",
+        "Estoy excelente 😄"
+      ],
+      "next_action": ""
+    },
+
+    {
+      "tag": "thanks",
+      "patterns": [
+        "gracias",
+        "muchas gracias",
+        "te agradezco",
+        "mil gracias"
+      ],
+      "responses": [
+        "¡Con gusto! 😊 un asesor se comunicará con usted"
+      ],
+      "next_action": ""
+    },
+
+    {
+      "tag": "ask_name",
+      "patterns": [
+        "como te llamas",
+        "cual es tu nombre",
+        "quien eres",
+        "como te puedo llamar"
+      ],
+      "responses": [
+        "Soy RematBot 😊 ¿Y tú cómo te llamas?"
+      ],
+      "next_action": "save_name"
+    },
+
+    {
+      "tag": "user_name_raw",
+      "patterns": [
+        "{name}",
+        "soy {name}",
+        "me llamo {name}",
+        "mi nombre es {name}"
+      ],
+      "responses": [
+        "Mucho gusto {name} 😊 ¿En qué puedo ayudarte hoy?"
+      ],
+      "next_action": "ask_city"
+    },
+
+    {
+      "tag": "info_remates",
+      "patterns": [
+        "quiero informacion de remates",
+        "explicame los remates",
+        "que es un remate",
+        "como funcionan los remates",
+        "quiero aprender"
+      ],
+      "responses": [
+        "Los remates permiten comprar propiedades con descuentos del 30% al 70%. ¿Quieres ver oportunidades disponibles?",
+        "Un remate inmobiliario es una venta judicial a precio reducido. ¿Deseas ver casas disponibles?"
+      ],
+      "next_action": "ask_city"
+    },
+
+    {
+      "tag": "show_properties",
+      "patterns": [
+        "muestrame propiedades",
+        "quiero ver casas",
+        "propiedades disponibles",
+        "tienes casas"
+      ],
+      "responses": [
+        "Perfecto, ¿de qué ciudad te gustaría ver propiedades?",
+        "¿En qué ciudad quieres ver remates?"
+      ],
+      "next_action": "save_city"
+    },
+
+    {
+      "tag": "city_interest",
+      "patterns": [
+        "en {city}",
+        "{city}",
+        "quiero ver casas en {city}"
+      ],
+      "responses": [
+        "Listo, buscaré propiedades en {city}. ¿Cuál es tu presupuesto?",
+        "Perfecto, reviso opciones en {city}. ¿Qué presupuesto manejas?"
+      ],
+      "next_action": "save_budget"
+    },
+
+    {
+      "tag": "budget",
+      "patterns": [
+        "mi presupuesto es {budget}",
+        "puedo pagar {budget}",
+        "tengo {budget}",
+        "{budget}"
+      ],
+      "responses": [
+        "Buen presupuesto. ¿Quieres que te envíe las oportunidades a tu WhatsApp?",
+        "Perfecto, con {budget} puedo encontrar buenas opciones. ¿Te envío la información al WhatsApp?"
+      ],
+      "next_action": "ask_phone"
+    },
+
+    {
+      "tag": "phone_request",
+      "patterns": [
+        "si",
+        "claro",
+        "por supuesto",
+        "ok",
+        "dale"
+      ],
+      "responses": [
+        "Genial 😊 ¿Cuál es tu número de WhatsApp?",
+        "Perfecto, dime tu número y te envío la información."
+      ],
+      "next_action": "save_phone"
+    },
+
+    {
+      "tag": "user_phone",
+      "patterns": [
+        "mi numero es {phone}",
+        "es {phone}",
+        "{phone}",
+        "whatsapp {phone}"
+      ],
+      "responses": [
+        "Listo {name}, un acesor se comunicará a su Whatsapp {phone} 📩",
+        "Perfecto {name}, te envío todo al número {phone}."
+      ],
+      "next_action": ""
+    }
+  ]
+}
