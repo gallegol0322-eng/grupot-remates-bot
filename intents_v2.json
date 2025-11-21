@@ -99,8 +99,6 @@
         "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada", "popayán"
   ],
 
-}
-
 {
   "intents": [
 
@@ -291,4 +289,5 @@
     }
   ]
 }
+
 
