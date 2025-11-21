@@ -1,8 +1,4 @@
 {
-
-  "intents": [  ]
-}
-
   "intents": [
     {
       "tag": "greeting",
@@ -180,5 +176,6 @@
     }
   ]
 }
+
 
 
