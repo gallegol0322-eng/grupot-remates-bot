@@ -202,17 +202,34 @@ def extract_city(text):
 
 def extract_budget(text):
     text = text.lower().strip()
-    text = text.replace(".", "").replace(",", "")
 
-    match = re.search(r"(\d+)\s*millones?", text)
+    # Normalizar formatos
+    text = text.replace(" ", "")
+    text = text.replace(".", "")
+    text = text.replace(",", "")
+    text = text.replace("$", "")
+
+    # Convertir 5m → 5000000
+    if "m" in text and text.replace("m", "").isdigit():
+        num = int(text.replace("m", ""))
+        return num * 1_000_000
+
+    # Convertir "5million" / "5mill" / "5millones"
+    match = re.search(r"(\d+)(m|mill|millon|millones|palo|palos)", text)
     if match:
-        return int(match.group(1)) * 1_000_000
+        num = int(match.group(1))
+        return num * 1_000_000
 
-    nums = re.sub(r"\D", "", text)
-    if nums.isdigit() and len(nums) >= 4:
-        return int(nums)
+    # Si es solo un número
+    if text.isdigit():
+        num = int(text)
+        # Si manda "5" asumimos millones para invertir
+        if num < 1000:
+            return num * 1_000_000
+        return num
 
     return None
+
 
 
 def extract_phone(text):
@@ -434,4 +451,5 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
