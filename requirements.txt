@@ -9,3 +9,4 @@ torch==2.1.0
 sentence-transformers==3.1.1
 transformers==4.30.2
 requests==2.32.5
+
