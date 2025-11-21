@@ -3,9 +3,11 @@ gunicorn
 gspread
 oauth2client
 joblib
-torch
+ttorch==2.2.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
 sentence-transformers
 transformers
 scikit-learn
 numpy
+
 
