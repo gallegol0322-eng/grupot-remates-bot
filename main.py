@@ -270,9 +270,21 @@ def handle_action(msg):
         return "No entendí tu presupuesto. Ej: 5 millones / 5000000"
 
     if user_state["last_action"]=="save_phone":
-        p=extract_phone(msg)
-        if p: user_state["phone"]=p; return confirm_value("teléfono",p)
-        return "Ese número no parece válido 📵 envíalo de nuevo."
+    p = extract_phone(msg)
+
+    # 🔥 Corrección para mensajes bloqueados por Instagram
+    if not p:
+        # si IG oculta el número, intentamos extraer sin mostrarlo
+        cleaned = re.sub(r"\D", "", msg)
+        if cleaned.isdigit() and 7 <= len(cleaned) <= 12:
+            p = cleaned
+
+    if p:
+        user_state["phone"]=p
+        return confirm_value("teléfono",p)
+
+    return "No pude leer tu número 📵 escríbelo así: *314xxxxxxx*"
+
 
 # -----------------------------
 # CHATBOT CENTRAL
@@ -333,6 +345,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
