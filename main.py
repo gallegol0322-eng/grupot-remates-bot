@@ -238,32 +238,56 @@ def process_confirmation(state,msg):
 # ACCIONES (NOMBRE, CIUDAD, PRESUPUESTO, TELÉFONO)
 # ============================================================
 
-def handle_action(state,action,msg):
+def process_confirmation(state,msg):
+    m = msg.lower().strip()
 
-    if state["confirming"]: return process_confirmation(state,msg)
+    if m in ["si","sí","claro","correcto","ok"]:
 
-    if action=="save_name":
-        n=extract_name(msg)
-        if n: state["name"]=n; return confirm_value(state,"nombre",n)
-        return "No entendí tu nombre, ¿puedes repetirlo?"
+        campo = state["confirming"]
+        state["confirming"] = None  # ya no estamos confirmando
 
-    if action=="save_city":
-        c=extract_city(msg)
-        if c: state["city"]=c; return confirm_value(state,"ciudad",c)
-        return "No entendí la ciudad."
+        # ✔ CONFIRMÓ NOMBRE → PASA A CIUDAD
+        if campo == "nombre":
+            state["last_action"] = "save_city"
+            return f"Listo {state['name']} 😊 ¿De qué ciudad nos escribes?"
 
-    if action=="save_budget":
-        b=extract_budget(msg)
-        if b: state["budget"]=b; return confirm_value(state,"presupuesto",f"${b:,}")
-        return "No entendí tu presupuesto."
+        # ✔ CONFIRMÓ CIUDAD → SEGÚN MODO PIDE SIGUIENTE
+        if campo == "ciudad":
+            if state["modo"] == "invertir":
+                state["last_action"] = "save_budget"
+                return f"{state['name']}, ¿cuál es tu presupuesto para invertir?"
+            else:
+                state["last_action"] = "save_phone"
+                return f"{state['name']}, ¿tu número de teléfono?"
 
-    if action=="save_phone":
-        p=extract_phone(msg)
-        if p: state["phone"]=p; return confirm_value(state,"teléfono",p)
-        return "Número inválido."
+        # ✔ CONFIRMÓ PRESUPUESTO → AHORA PIDE TELÉFONO
+        if campo == "presupuesto":
+            state["last_action"] = "save_phone"
+            return "Perfecto. ¿Cuál es tu número de contacto?"
 
-    return None
+        # 🚀 CONFIRMÓ TELÉFONO → GUARDA + MENSAJE FINAL + CIERRA FLUJO
+        if campo == "teléfono":
 
+            guardar_en_google_sheets(**state)  # 🔥 envío automático al sheet
+
+            # cerramos el ciclo para no seguir pidiendo datos
+            state["last_action"] = None
+            state["confirming"] = None
+
+            return (
+                f"📌 Registro completado con éxito {state['name']}!\n\n"
+                f"🟢 Modalidad: *{state['modo']}*\n"
+                f"🏙 Ciudad: *{state['city']}*\n"
+                f"💰 Presupuesto: *{state['budget']:,} COP*\n"
+                f"📞 Teléfono: *{state['phone']}*\n\n"
+                f"Un asesor se comunicará contigo en breve 🚀"
+            )
+
+    # ❗ Si responde NO → vuelve a pedir campo
+    campo = state["confirming"]
+    state[campo] = None
+    state["confirming"] = None
+    return f"Entendido, repíteme tu {campo}."
 
 # ============================================================
 # **LÓGICA — AQUÍ SE AÑADEN LAS MEJORAS**
@@ -337,3 +361,4 @@ def webhook():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=int(os.environ.get("PORT",5000)))
+
