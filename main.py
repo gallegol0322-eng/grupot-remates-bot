@@ -220,9 +220,14 @@ def process_confirmation(msg):
                 user_state["last_action"]="save_phone"
                 return f"{user_state['name']}, ¿tu número de teléfono?"
 
-        if field=="presupuesto":
-            user_state["last_action"]="save_phone"
-            return "Perfecto. ¿Cuál es tu número?"
+       
+        if field == "presupuesto":
+            user_state["last_action"] = "save_phone"
+              return (
+                      f"Excelente {user_state['name']} 💰\n"
+                      "Ahora dime tu número de WhatsApp para contactarte."
+                      )
+
 
         if field=="teléfono":
             from google_sheets import guardar_en_google_sheets
@@ -326,3 +331,4 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
