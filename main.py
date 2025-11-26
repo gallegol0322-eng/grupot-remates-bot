@@ -221,12 +221,9 @@ def process_confirmation(msg):
                 return f"{user_state['name']}, ¿tu número de teléfono?"
 
        
-       if field == "presupuesto":
-    user_state["last_action"] = "save_phone"
-    return (
-        f"Excelente {user_state['name']} 💰\n"
-        "Ahora dime tu número de WhatsApp para contactarte."
-    )
+         if field == "presupuesto":
+             if user_state["last_action"] = "save_phone"
+                return   f"Excelente {user_state['name']} 💰\n", "Ahora dime tu número de WhatsApp para contactarte." 
 
 
 
@@ -333,5 +330,6 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
