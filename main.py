@@ -225,7 +225,9 @@ def process_confirmation(state,msg):
             state["last_action"]= "save_budget" if state["modo"]=="invertir" else "save_phone"
             return f"{state['name']}, ¿cuál es tu presupuesto?" if state["modo"]=="invertir" else f"{state['name']}, ¿tu número de teléfono?"
 
-        if campo=="presupuesto": state["last_action"]="save_phone"; return "Perfecto. ¿Cuál es tu número?"
+        if campo=="presupuesto": state["last_action"]="save_phone";     
+        return f"Perfecto {state['name']} 😊 ¿Cuál es tu número de contacto?"
+
         if campo=="teléfono":
             guardar_en_google_sheets(**state)
             return f"Perfecto {state['name']} 😊\nRegistro completado.\nUn asesor te contactará al {state['phone']} 📩"
@@ -361,4 +363,5 @@ def webhook():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=int(os.environ.get("PORT",5000)))
+
 
