@@ -23,7 +23,7 @@ def get_state(uid):
             "city": None,
             "budget": None,
             "phone": None,
-            "modo": None,
+            "modo": None,            # aprender o invertir
             "last_action": None,
             "confirming": None
         }
@@ -40,42 +40,26 @@ def reset_state(uid):
 
 def extract_name(text):
     text = text.lower().strip()
-    text = re.sub(r"[^a-zA-Záéíóúñ ]", "", text)
+    text = re.sub(r"[^a-záéíóúñ ]", "", text)
 
-    match = re.search(r"(me llamo|mi nombre es|soy)\s+([a-zA-Záéíóúñ ]+)", text)
+    match = re.search(r"(me llamo|mi nombre es|soy)\s+([a-záéíóúñ ]+)", text)
     if match:
         name = match.group(2).strip()
-        parts = name.split()
-        if 1 <= len(parts) <= 3:
+        if 1 <= len(name.split()) <= 3:
             return name.title()
         return None
 
-    parts = text.split()
-    if 1 <= len(parts) <= 3:
+    if 1 <= len(text.split()) <= 3:
         return text.title()
-
     return None
-# ============================================================
+
 
 def extract_city(text):
     text = text.lower()
+    text = re.sub(r"(desde|soy de|estoy en|vivo en|ciudad de|de|en)\s+", "", text)
 
-    text = re.sub(
-        r"(desde|soy de|estoy en|vivo en|la ciudad de|ciudad de|de|en)\s+",
-        "",
-        text,
-    )
-
-    text_norm = (
-        text.replace("á","a")
-            .replace("é","e")
-            .replace("í","i")
-            .replace("ó","o")
-            .replace("ú","u")
-    )
-
-    ciudades = [
-        "Abriaquí","Acacías","Acandí","Acevedo","Achí","Agrado"
+    norm = text.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
+    ciudades = [ "Abriaquí","Acacías","Acandí","Acevedo","Achí","Agrado"
         ,"Aguachica","Aguada","Aguadas","Aguazul","Agustín Codazzi",
         "Aipe","Albania","Albania (Caquetá)","Albania (Santander)","Albán",
         "Albán (Nariño)","Alcalá","Alejandría","Algarrobo","Algeciras","Almaguer"
@@ -171,65 +155,30 @@ def extract_city(text):
         "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Cundinamarca", 
         "Córdoba", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", 
         "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés, Providencia y Santa Catalina", 
-        "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada", "popayán"
-        
-        
-        
+        "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada", "popayán" ]  # (Mantengo tu bloque intacto para no romper el archivo)
 
-    ]
+    ciudades_normalizadas = [c.lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u") for c in ciudades]
+    mapa = dict(zip(ciudades_normalizadas, ciudades))
 
-    ciudades_normalizadas = [
-        c.lower()
-         .replace("á","a")
-         .replace("é","e")
-         .replace("í","i")
-         .replace("ó","o")
-         .replace("ú","u")
-        for c in ciudades
-    ]
-
-    ciudades_map = dict(zip(ciudades_normalizadas, ciudades))
-
-    for w in text_norm.split():
-        if w in ciudades_map:
-            return ciudades_map[w]
-
-    if text_norm in ciudades_map:
-        return ciudades_map[text_norm]
-
-    return None
+    for palabra in norm.split():
+        if palabra in mapa: return mapa[palabra]
+    return mapa.get(norm)
 
 
 def extract_budget(text):
-    text = text.lower().strip()
+    text = text.lower().replace(" ", "").replace(".", "").replace(",", "").replace("$","")
 
-    # Normalizar formatos
-    text = text.replace(" ", "")
-    text = text.replace(".", "")
-    text = text.replace(",", "")
-    text = text.replace("$", "")
+    if "m" in text and text.replace("m","").isdigit():
+        return int(text.replace("m","")) * 1_000_000
 
-    # Convertir 5m → 5000000
-    if "m" in text and text.replace("m", "").isdigit():
-        num = int(text.replace("m", ""))
-        return num * 1_000_000
-
-    # Convertir "5million" / "5mill" / "5millones"
     match = re.search(r"(\d+)(m|mill|millon|millones|palo|palos)", text)
-    if match:
-        num = int(match.group(1))
-        return num * 1_000_000
+    if match: return int(match.group(1)) * 1_000_000
 
-    # Si es solo un número
     if text.isdigit():
-        num = int(text)
-        # Si manda "5" asumimos millones para invertir
-        if num < 1000:
-            return num * 1_000_000
-        return num
+        n = int(text)
+        return n * 1_000_000 if n < 1000 else n
 
     return None
-
 
 
 def extract_phone(text):
@@ -238,218 +187,153 @@ def extract_phone(text):
 
 
 # ============================================================
-# CARGA DE MODELOS
+# MODELOS
 # ============================================================
 
 intent_model = joblib.load("models/intent_model.joblib")
-vectorizer = joblib.load("models/intent_vectorizer.joblib")
+vectorizer   = joblib.load("models/intent_vectorizer.joblib")
+emb          = torch.load("semantic_embeddings.pt")
+model_sem    = SentenceTransformer("all-MiniLM-L6-v2")
 
-emb = torch.load("semantic_embeddings.pt")
-model_sem = SentenceTransformer("all-MiniLM-L6-v2")
-
-with open("intents_v2.json", "r", encoding="utf-8") as f:
+with open("intents_v2.json","r",encoding="utf-8") as f:
     intents = json.load(f)["intents"]
 
 
-# ============================================================
-# SEMÁNTICA
-# ============================================================
-
 def find_semantic(text):
     q = model_sem.encode(text, convert_to_tensor=True)
-    scores = torch.matmul(q, emb["sentence_embeddings"].T)
-    idx = torch.argmax(scores).item()
+    idx = torch.argmax(torch.matmul(q, emb["sentence_embeddings"].T)).item()
     tag = emb["mapping"][idx]
-
-    for intent in intents:
-        if intent["tag"] == tag:
-            return intent
-
-    return None
+    return next((i for i in intents if i["tag"] == tag), None)
 
 
 # ============================================================
 # CONFIRMACIONES
 # ============================================================
 
-def confirm_value(state, key, value):
-    state["confirming"] = key
+def confirm_value(state,key,value):
+    state["confirming"]=key
     return f"¿Tu {key.title()} es {value}? (sí / no)"
 
 
-def process_confirmation(state, msg):
-    msg = msg.lower().strip()
+def process_confirmation(state,msg):
+    m=msg.lower().strip()
+    if m in ["si","sí","claro","correcto","ok"]:
+        campo=state["confirming"]; state["confirming"]=None
 
-    if msg in ["si", "sí", "claro", "correcto", "ok"]:
-        field = state["confirming"]
-        state["confirming"] = None
+        if campo=="nombre": state["last_action"]="save_city"; return f"Listo {state['name']} 😊 ¿De qué ciudad nos escribes?"
+        if campo=="ciudad":
+            state["last_action"]= "save_budget" if state["modo"]=="invertir" else "save_phone"
+            return f"{state['name']}, ¿cuál es tu presupuesto?" if state["modo"]=="invertir" else f"{state['name']}, ¿tu número de teléfono?"
 
-        if field == "nombre":
-            state["last_action"] = "save_city"
-            return f"Listo {state['name']} 😊 ¿De qué ciudad nos escribes?"
+        if campo=="presupuesto": state["last_action"]="save_phone"; return "Perfecto. ¿Cuál es tu número?"
+        if campo=="teléfono":
+            guardar_en_google_sheets(**state)
+            return f"Perfecto {state['name']} 😊\nRegistro completado.\nUn asesor te contactará al {state['phone']} 📩"
 
-        if field == "ciudad":
-            if state["modo"] == "invertir":
-                state["last_action"] = "save_budget"
-                return f"{state['name']}, ¿cuál es tu presupuesto?"
-            else:
-                state["last_action"] = "save_phone"
-                return f"{state['name']}, ¿cuál es tu número de teléfono?"
-
-        if field == "presupuesto":
-            state["last_action"] = "save_phone"
-            return "Perfecto. ¿Cuál es tu número?"
-
-        if field == "teléfono":
-            guardar_en_google_sheets(
-                modo=state["modo"],
-                name=state["name"],
-                city=state["city"],
-                budget=state["budget"],
-                phone=state["phone"]
-            )
-            return (
-                f"Perfecto {state['name']} 😊\n"
-                f"Te registramos correctamente.\n"
-                f"Un asesor te contactará al {state['phone']} 📩"
-            )
-
-    field = state["confirming"]
-    state[field] = None
-    state["confirming"] = None
-    return f"Entendido, repíteme tu {field} por favor."
+    field=state["confirming"]; state[field]=None; state["confirming"]=None
+    return f"Entendido, repíteme tu {field}."
 
 
 # ============================================================
-# ACCIONES
+# ACCIONES (NOMBRE, CIUDAD, PRESUPUESTO, TELÉFONO)
 # ============================================================
 
-def handle_action(state, action, msg):
+def handle_action(state,action,msg):
 
-    if state["confirming"]:
-        return process_confirmation(state, msg)
+    if state["confirming"]: return process_confirmation(state,msg)
 
-    if action == "save_name":
-        n = extract_name(msg)
-        if n:
-            state["name"] = n
-            return confirm_value(state, "nombre", n)
+    if action=="save_name":
+        n=extract_name(msg)
+        if n: state["name"]=n; return confirm_value(state,"nombre",n)
         return "No entendí tu nombre, ¿puedes repetirlo?"
 
-    if action == "save_city":
-        c = extract_city(msg)
-        if c:
-            state["city"] = c
-            return confirm_value(state, "ciudad", c)
-        return "No entendí la ciudad, escríbela de nuevo."
+    if action=="save_city":
+        c=extract_city(msg)
+        if c: state["city"]=c; return confirm_value(state,"ciudad",c)
+        return "No entendí la ciudad."
 
-    if action == "save_budget":
-        b = extract_budget(msg)
-        if b:
-            state["budget"] = b
-            return confirm_value(state, "presupuesto", f"${b:,}")
+    if action=="save_budget":
+        b=extract_budget(msg)
+        if b: state["budget"]=b; return confirm_value(state,"presupuesto",f"${b:,}")
         return "No entendí tu presupuesto."
 
-    if action == "save_phone":
-        p = extract_phone(msg)
-        if p:
-            state["phone"] = p
-            return confirm_value(state, "teléfono", p)
-        return "Ese número no es válido."
+    if action=="save_phone":
+        p=extract_phone(msg)
+        if p: state["phone"]=p; return confirm_value(state,"teléfono",p)
+        return "Número inválido."
 
     return None
 
 
 # ============================================================
-# LOGICA DEL CHATBOT
+# **LÓGICA — AQUÍ SE AÑADEN LAS MEJORAS**
 # ============================================================
 
-def chatbot_answer(uid, msg):
-    state = get_state(uid)
-    m = msg.lower().strip()
+def chatbot_answer(uid,msg):
+    state=get_state(uid)
+    m=msg.lower().strip()
 
-    if m == "reset":
-        reset_state(uid)
-        return "Listo, empecemos de cero 😊"
+    # Reinicio manual
+    if m=="reset": reset_state(uid); return "Reiniciado ✔"
 
+    # 👉 Detecta aprender/invertir aunque no sea exacto
     if state["modo"] is None:
-        if "aprender" in m:
-            state["modo"] = "aprender"
-            state["last_action"] = "save_name"
+        if re.search(r"aprend|curso|estudi|informaci.*aprend",m):
+            state["modo"]="aprender"; state["last_action"]="save_name"
             return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
 
-        if "invertir" in m:
-            state["modo"] = "invertir"
-            state["last_action"] = "save_name"
+        if re.search(r"invert|invers|capital|rendim",m):
+            state["modo"]="invertir"; state["last_action"]="save_name"
             return "Excelente 💼 ¿Cuál es tu nombre completo?"
 
-        return "¿Deseas aprender o invertir? 🙌"
+        return "¿Deseas aprender o invertir? 🙌 Puedes decir: *Quiero aprender* o *Deseo invertir*."
 
-    if "asesor" in m:
-        return "Aquí tienes contacto directo 👇\nhttps://wa.me/573160422795"
+    # Atajo asesor
+    if "asesor" in m: return "Contacto directo 👇\nhttps://wa.me/573160422795"
 
-    if state["confirming"]:
-        return process_confirmation(state, msg)
+    # Confirmaciones
+    if state["confirming"]: return process_confirmation(state,msg)
 
+    # Siguiente acción secuencial (nombre→ciudad→presupuesto→teléfono)
     if state["last_action"]:
-        forced = handle_action(state, state["last_action"], msg)
-        if forced:
-            return forced
+        r=handle_action(state,state["last_action"],msg)
+        if r: return r
 
-    cleaned = clean_text(msg)
-    intent = intent_model.predict(vectorizer.transform([cleaned]))[0]
-
+    # Modelo de intención
+    intent=intent_model.predict(vectorizer.transform([clean_text(msg)]))[0]
     for i in intents:
-        if i["tag"] == intent:
-            state["last_action"] = i.get("next_action")
-            resp = i["responses"][0]
+        if i["tag"]==intent:
+            state["last_action"]=i.get("next_action")
+            r=i["responses"][0]
 
-            if "{name}" in resp and state["name"]:
-                resp = resp.replace("{name}", state["name"])
-            if "{city}" in resp and state["city"]:
-                resp = resp.replace("{city}", state["city"])
-            if "{budget}" in resp and state["budget"]:
-                resp = resp.replace("{budget}", f"${state['budget']:,}")
-            if "{phone}" in resp and state["phone"]:
-                resp = resp.replace("{phone}", state["phone"])
+            if "{name}" in r and state["name"]: r=r.replace("{name}",state["name"])
+            if "{city}" in r and state["city"]: r=r.replace("{city}",state["city"])
+            if "{budget}" in r and state["budget"]: r=r.replace("{budget}",f"${state['budget']:,}")
+            if "{phone}" in r and state["phone"]: r=r.replace("{phone}",state["phone"])
+            return r
 
-            return resp
-
-    sem = find_semantic(msg)
+    sem=find_semantic(msg)
     if sem:
-        state["last_action"] = sem.get("next_action")
+        state["last_action"]=sem.get("next_action")
         return sem["responses"][0]
 
-    return "No entendí muy bien, ¿podrías repetirlo?"
+    return "No entendí bien 🤔 ¿podrías repetirlo?"
 
 
 # ============================================================
-# FLASK ROUTES
+# FLASK SERVER
 # ============================================================
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"status": "online"}), 200
+@app.route("/",methods=["GET"])
+def home(): return jsonify({"status":"online"}),200
 
-
-@app.route("/webhook", methods=["POST"])
+@app.route("/webhook",methods=["POST"])
 def webhook():
-    data = request.get_json(force=True)
-
-    uid = str(data.get("user_id") or data.get("sender_id") or data.get("id") or "anon")
-    msg = data.get("message") or data.get("text") or data.get("comment") or ""
-
-    respuesta = chatbot_answer(uid, msg)
-
-    return jsonify({"respuesta": respuesta}), 200
+    data=request.get_json(force=True)
+    uid=str(data.get("user_id") or data.get("sender_id") or data.get("id") or "anon")
+    msg=data.get("message") or data.get("text") or data.get("comment") or ""
+    return jsonify({"respuesta":chatbot_answer(uid,msg)}),200
 
 
-# ============================================================
-# INICIO DEL SERVIDOR (RENDER)
-# ============================================================
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
-
+if __name__=="__main__":
+    app.run(host="0.0.0.0",port=int(os.environ.get("PORT",5000)))
