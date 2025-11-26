@@ -205,8 +205,8 @@ def process_confirmation(msg):
     msg = msg.lower().strip()
 
     if msg in ["si","sí","claro","correcto","ok"]:
-        field=user_state["confirming"]
-        user_state["confirming"]=None
+        field = user_state["confirming"]
+        user_state["confirming"] = None
 
         if field=="nombre":
             user_state["last_action"]="save_city"
@@ -220,13 +220,12 @@ def process_confirmation(msg):
                 user_state["last_action"]="save_phone"
                 return f"{user_state['name']}, ¿tu número de teléfono?"
 
-       
-         if field == "presupuesto":
-             if user_state["last_action"] = "save_phone"
-                return   f"Excelente {user_state['name']} 💰\n", "Ahora dime tu número de WhatsApp para contactarte." 
-
-
-
+        if field == "presupuesto":
+            user_state["last_action"] = "save_phone"
+            return (
+                f"Excelente {user_state['name']} 💰\n"
+                "Ahora dime tu número de WhatsApp para contactarte."
+            )
 
         if field=="teléfono":
             from google_sheets import guardar_en_google_sheets
@@ -237,7 +236,11 @@ def process_confirmation(msg):
                 budget=user_state["budget"],
                 phone=user_state["phone"]
             )
-            return f"Perfecto {user_state['name']} 😊\nRegistro completado.\nUn asesor te contactará al {user_state['phone']} 📩"
+            return (
+                f"Perfecto {user_state['name']} 😊\n"
+                "Registro completado.\n"
+                f"Un asesor te contactará al {user_state['phone']} 📩"
+            )
 
     # ❗Si dice "no"
     invalid=user_state["confirming"]
@@ -330,6 +333,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
