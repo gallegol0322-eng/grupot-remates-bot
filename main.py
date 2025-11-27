@@ -228,19 +228,21 @@ def process_confirmation(msg):
             )
 
         if field=="teléfono":
-            from google_sheets import guardar_en_google_sheets
-            guardar_en_google_sheets(
-                modo=user_state["modo"],
-                name=user_state["name"],
-                city=user_state["city"],
-                budget=user_state["budget"],
-                phone=user_state["phone"]
-            )
-            return (
-                f"Perfecto {user_state['name']} 😊\n"
-                "Registro completado.\n"
-                f"Un asesor te contactará al {user_state['phone']} 📩"
-            )
+    from google_sheets import guardar_en_google_sheets
+    guardar_en_google_sheets(
+        modo=user_state["modo"],
+        name=user_state["name"],
+        city=user_state["city"],
+        budget=user_state["budget"],
+        phone=user_state["phone"]
+    )
+
+    return (
+        f"Perfecto {user_state['name']} 😊\n"
+        f"Registro completado.\n"
+        f"Un asesor te contactará al {user_state['phone']} 📩"
+    )
+
 
     # ❗Si dice "no"
     invalid=user_state["confirming"]
@@ -345,6 +347,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
