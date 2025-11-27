@@ -3,8 +3,7 @@ import json
 import os
 from google.oauth2.service_account import Credentials
 
-# 🆔 ID del libro
-SPREADSHEET_ID = "clientes_bot"  # <-- si tu ID no es este, te digo ahora cómo tomarlo
+SPREADSHEET_ID = "1OPvixPXTfuYnpGYcxcyFRQzSuM3aKqDyLTZLXL-g54k"
 
 HOJAS = {
     "invertir": "invertir",
@@ -12,8 +11,6 @@ HOJAS = {
 }
 
 def guardar_en_google_sheets(modo, name, city, budget, phone):
-
-    # Lee JSON desde la env var GOOGLE_CREDENTIALS
     creds_info = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 
     creds = Credentials.from_service_account_info(
@@ -21,14 +18,14 @@ def guardar_en_google_sheets(modo, name, city, budget, phone):
         scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
 
-    gc = gspread.authorize(creds)
-
-    # 📄 Abrir libro
-    sh = gc.open_by_key(SPREADSHEET_ID)
+    client = gspread.authorize(creds)
+    sh = client.open_by_key(SPREADSHEET_ID)
 
     hoja = HOJAS.get(modo, "invertir")
+    try:
+        worksheet = sh.worksheet(hoja)
+    except gspread.WorksheetNotFound:
+        worksheet = sh.add_worksheet(title=hoja, rows="1000", cols="20")
 
-    ws = sh.worksheet(hoja)
-    ws.append_row([name, city, budget, phone])  # envía fila 🔥
-
-    print(f"✔ Guardado Google Sheets ({hoja})")
+    worksheet.append_row([name, city, budget, phone])
+    print(f"✔ Guardado en Google Sheets — hoja «{hoja}»")
