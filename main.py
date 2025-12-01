@@ -241,7 +241,7 @@ def process_confirmation(msg, state):
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / PRESUPUESTO / TELÉFONO
 # ==============================================
 def handle_action(msg, state):
-msg = limpiar_trigger(msg).lower().strip()
+    msg = limpiar_trigger(msg).lower().strip()
 
     if state["confirming"]:
         return process_confirmation(msg, state)
@@ -337,5 +337,6 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
