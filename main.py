@@ -355,6 +355,8 @@ def chatbot(msg: str):
             return "Excelente 💼 ¿Cuál es tu nombre completo?"
         return "¿Deseas *aprender* o *invertir*? 🤔"
 
+
+
     # Si estamos confirmando algo
     if user_state["confirming"]:
         return process_confirmation(msg)
@@ -401,19 +403,22 @@ def chatbot(msg: str):
 # -----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    data = request.get_json(force=True) or {}
+    data = request.get_json(force=True)
 
+    uid = str(data.get("user_id") or data.get("sender_id") or data.get("contact_id") or "unknown")
     msg = data.get("message") or data.get("text") or data.get("comment") or ""
-    respuesta = chatbot(msg)
+
+    state = get_state(uid)  # <-- recupera o crea sesión del usuario
+
+    respuesta = chatbot(msg, state)  # <-- ahora chatbot usa ese estado
 
     return jsonify({"respuesta": respuesta}), 200
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"status": "online"}), 200
+
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
