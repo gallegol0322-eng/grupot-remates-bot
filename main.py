@@ -264,16 +264,8 @@ def handle_action(msg, state):
 
     if state["last_action"]=="save_phone":
         p=extract_phone(msg)
-        if not p:
-           return (
-               "⚠ Instagram puede estar bloqueando el número.\n"
-               "Envíalo usando *guiones, espacios o puntos*, por ejemplo:\n\n"
-               "📌 314 523 2968\n"
-               "📌 314-523-2968\n"
-               "📌 314.523.2968\n"
-               "📌 314/523/2968"
-          )
-       return confirm_value("phone", p, state)
+        if p: state["phone"]=p; return confirm_value("phone",p,state)
+        return "No logro reconocerlo, escribe tu numero con espacios así: *314 123 4567*"
 
 
 
@@ -348,6 +340,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
