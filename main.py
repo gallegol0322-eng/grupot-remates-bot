@@ -262,12 +262,10 @@ def handle_action(msg, state):
         if b: state["budget"]=b; return confirm_value("presupuesto",f"${b:,}",state)
         return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
-    if state["last_action"] == "save_phone":
+    if state["last_action"]=="save_phone":
         p = extract_phone(msg)
-
-    # Si Instagram oculta el número -> no llegó nada válido
         if not p:
-            return (
+           return (
                "⚠ Instagram puede estar bloqueando el número.\n"
                "Envíalo usando *guiones, espacios o puntos*, por ejemplo:\n\n"
                "📌 314 523 2968\n"
@@ -275,8 +273,6 @@ def handle_action(msg, state):
                "📌 314.523.2968\n"
                "📌 314/523/2968"
           )
-
-    # Si se pudo leer correctamente
        state["phone"] = p
        return confirm_value("teléfono", p, state)
 
@@ -353,6 +349,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
