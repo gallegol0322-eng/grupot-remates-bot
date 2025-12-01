@@ -13,15 +13,25 @@ app = Flask(__name__)
 # ESTADO ÚNICO DEL USUARIO
 # (para pruebas; en producción idealmente por user_id)
 # -----------------------------
-user_state = {
-    "name": None,
-    "city": None,
-    "budget": None,
-    "phone": None,
-    "modo": None,          # "aprender" o "invertir"
-    "last_action": None,   # qué dato estamos pidiendo
-    "confirming": None     # qué campo estamos confirmando
-}
+user_states = {}
+
+def get_state(uid):
+    if uid not in user_states:
+        user_states[uid] = {
+            "name": None,
+            "city": None,
+            "budget": None,
+            "phone": None,
+            "modo": None,
+            "last_action": None,
+            "confirming": None
+        }
+    return user_states[uid]
+
+def reset_state(uid):
+    if uid in user_states:
+        del user_states[uid]
+
 
 # -----------------------------
 # EXTRACCIÓN DE NOMBRE
@@ -406,3 +416,4 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
