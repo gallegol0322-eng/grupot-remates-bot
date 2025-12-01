@@ -226,7 +226,7 @@ def process_confirmation(msg, state):
             state["last_action"]="save_phone"
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
-        if field=="teléfono":
+        if field=="phone":
             guardar_en_google_sheets(
                 modo=state["modo"], name=state["name"], city=state["city"],
                 budget=state["budget"], phone=state["phone"]
@@ -273,8 +273,8 @@ def handle_action(msg, state):
                "📌 314.523.2968\n"
                "📌 314/523/2968"
           )
-       state["phone"] = p
-       return confirm_value("teléfono", p, state)
+       state["phone"]=p
+       return confirm_value("phone", p, state)
 
 
 
@@ -349,6 +349,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
