@@ -7,6 +7,13 @@ from clean_text import clean_text
 from sentence_transformers import SentenceTransformer
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
 
+
+
+def limpiar_trigger(text):
+    return re.sub(r"^prueba\s+","", text.strip(), flags=re.IGNORECASE)
+
+
+
 app = Flask(__name__)
 
 # ==============================================
@@ -32,6 +39,7 @@ def get_state(uid):
 #  📌  EXTRACCIÓN DE DATOS DEL USUARIO
 # ==============================================
 def extract_name(text):
+    text = limpiar_trigger(text)
     text = text.lower().strip()
     text = re.sub(r"[^a-zA-Záéíóúñ ]", "", text)
 
@@ -47,6 +55,7 @@ def extract_name(text):
 
 
 def extract_city(text):
+    text = limpiar_trigger(text)
     text = text.lower().strip()
     text = re.sub(r"(desde|soy de|estoy en|vivo en|ciudad de|de|en)\s+", "", text)
     norm = (text.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"))
@@ -141,6 +150,7 @@ def extract_city(text):
 
 
 def extract_budget(text):
+    text = limpiar_trigger(text)
     text = text.lower().replace(".", "").replace(",", "").strip()
 
     m = re.search(r"(\d+)\s*millones?", text)
@@ -154,6 +164,7 @@ def extract_budget(text):
 
 
 def extract_phone(text):
+    text = limpiar_trigger(text)
     phone = re.sub(r"\D", "", text)
     return phone if 7 <= len(phone) <= 12 else None
 
