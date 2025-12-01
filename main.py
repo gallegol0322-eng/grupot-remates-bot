@@ -167,8 +167,9 @@ def extract_budget(text):
 
 def extract_phone(text):
     text = limpiar_trigger(text)
-    phone = re.sub(r"\D", "", text)
+    phone = re.sub(r"\D", "", "[^0-9]",  text)
     return phone if 7 <= len(phone) <= 12 else None
+
 
 
 # ==============================================
@@ -261,10 +262,24 @@ def handle_action(msg, state):
         if b: state["budget"]=b; return confirm_value("presupuesto",f"${b:,}",state)
         return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
-    if state["last_action"]=="save_phone":
-        p=extract_phone(msg)
-        if p: state["phone"]=p; return confirm_value("teléfono",p,state)
-        return "Escribe tu número sin espacios. Ej: 3141234567"
+   if state["last_action"] == "save_phone":
+     p = extract_phone(msg)
+
+    # Si Instagram bloquea el número y ManyChat no recibe nada válido
+     if not p:
+        return (
+            "⚠ Instagram puede estar bloqueando el número.\n"
+            "Envíalo usando *guiones, espacios o puntos*, por ejemplo:\n\n"
+            "📌 314 523 2968\n"
+            "📌 314-523-2968\n"
+            "📌 314•523•2968\n"
+            "📌 314/523/2968"
+        )
+
+    # Si el número sí fue leído correctamente
+     state["phone"] = p
+     return confirm_value("teléfono", p, state)
+
 
 
 # ==============================================
@@ -337,6 +352,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
