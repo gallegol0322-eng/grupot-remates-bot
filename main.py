@@ -10,7 +10,9 @@ from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, come
 
 
 def limpiar_trigger(text):
-    return re.sub(r"^prueba\s+","", text.strip(), flags=re.IGNORECASE)
+    # elimina SOLO si prueba está al inicio, así no afecta el chat normal
+    return re.sub(r"^prueba\s*", "", text.strip(), flags=re.IGNORECASE)
+
 
 
 
@@ -199,7 +201,7 @@ def confirm_value(field, value, state):
 
 
 def process_confirmation(msg, state):
-    msg = msg.lower().strip()
+    msg = limpiar_trigger(msg).lower().strip()
     field = state.get("confirming")
 
     if not field: return "No entendí, repite por favor."
@@ -242,7 +244,8 @@ def handle_action(msg, state):
 
     if state["confirming"]:
         return process_confirmation(msg, state)
-
+        
+    msg = limpiar_trigger(msg)
     if state["last_action"]=="save_name":
         n=extract_name(msg)
         if n: state["name"]=n; return confirm_value("nombre",n,state)
@@ -334,3 +337,4 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
