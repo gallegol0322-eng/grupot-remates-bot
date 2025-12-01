@@ -166,9 +166,15 @@ def extract_budget(text):
 
 
 def extract_phone(text):
-    text = limpiar_trigger(text)
-    phone = re.sub(r"\D", "", "[^0-9]",  text)
-    return phone if 7 <= len(phone) <= 12 else None
+    if not text:
+        return None
+    # Quitar todo lo que no sea número
+    phone = re.sub(r"\D", "", text)
+    # El número debe tener entre 7 y 15 dígitos para considerarse válido
+    if len(phone) < 7 or len(phone) > 15:
+        return None
+    return phone
+
 
 
 
@@ -340,6 +346,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
