@@ -263,7 +263,7 @@ def handle_action(msg, state):
         return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
     if state["last_action"]=="save_phone":
-        p = extract_phone(msg)
+        p=extract_phone(msg)
         if not p:
            return (
                "⚠ Instagram puede estar bloqueando el número.\n"
@@ -349,6 +349,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
