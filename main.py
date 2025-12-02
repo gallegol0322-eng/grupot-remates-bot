@@ -247,7 +247,26 @@ def process_confirmation(msg, state):
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
         return f"Ok, repíteme tu {field}."
- 
+        
+        if field == "telefono":
+          try:
+              guardar_en_google_sheets(
+              modo=state["modo"],
+              name=state["name"],
+              city=state["city"],
+              budget=state["budget"],
+              phone=state["phone"]
+          )
+          except:
+                pass
+
+          state["last_action"] = None
+          state["confirming"] = None
+
+          return (
+           "Perfecto ✔️ Registro guardado.\n"
+           "Un asesor te contactará pronto 💌"
+           )
 
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / PRESUPUESTO / TELÉFONO
@@ -274,15 +293,16 @@ def handle_action(msg, state):
         return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
     if state["last_action"]=="save_phone":
-       p = extract_phone(msg)
+        p = extract_phone(msg)
 
     # Si pude leer el número → confirmar
-       if p:
+        if p:
              state["phone"] = p
-             return confirm_value("teléfono", p, state)
+             state["confirming"] = "telefono"
+             return f"¿Tu teléfono es {p}? (sí / no)"
 
     # Si no entendí el número → pedir de nuevo
-       return (
+        return (
           "No logro leer tu número 📵\n"
           "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
           "📌 314 523 2968\n"
@@ -290,30 +310,6 @@ def handle_action(msg, state):
           "📌 314.523.2968\n"
           "📌 +57 314 523 2968\n"
     )
-
-        
-    # Enviar a sheet
-    try:
-            guardar_en_google_sheets(
-                modo=state["modo"],
-                name=state["name"],
-                city=state["city"],
-                budget=state["budget"],
-                phone=state["phone"]
-            )
-    except:
-            pass
-
-        # limpiar flujo
-        state["last_action"] = None
-        state["confirming"] = None
-
-    return (
-            "Perfecto ✔️ Registro guardado.\n"
-            "✔ Un asesor te contactará pronto 💌"
-        )
-
-
     return None
 
 
@@ -388,6 +384,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
