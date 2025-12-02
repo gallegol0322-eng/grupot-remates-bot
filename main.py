@@ -8,14 +8,6 @@ from sentence_transformers import SentenceTransformer
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
 
 
-
-def limpiar_trigger(text):
-    # elimina SOLO si prueba está al inicio, así no afecta el chat normal
-    return re.sub(r"^prueba\s*", "", text.strip(), flags=re.IGNORECASE)
-
-
-
-
 app = Flask(__name__)
 
 # ==============================================
@@ -49,7 +41,7 @@ def extract_name(text):
     if match:
         name = match.group(2).strip()
         if 1 <= len(name.split()) <= 3: return name.title()
-
+   
     if 1 <= len(text.split()) <= 3:
         return text.title()
 
@@ -139,7 +131,13 @@ def extract_city(text):
         "Casanare","Cauca","Cesar","Chocó","Cundinamarca","Córdoba","Guainía","Guaviare",
         "Huila","La Guajira","Magdalena","Meta","Nariño","Norte de Santander","Putumayo",
         "Quindío","Risaralda","San Andrés, Providencia y Santa Catalina","Santander",
-        "Sucre","Tolima","Valle del Cauca","Vaupés","Vichada"] 
+        "Sucre","Tolima","Valle del Cauca","Vaupés","Vichada","Buga", "Alcalá", "Andersen", "Buga", "Bugalagrande", "Bolívar", 
+        "Buenaventura", "Cali", "Calima", "Candelaria", "Cartago", "Dagua", "El Águila", "El Cairo", 
+        "El Cerrito", "El Dovio", "Florida", "Galeras", "Ginebra", "Guacarí", "Guachené", "Jamundí", 
+        "La Cumbre", "La Unión", "La Victoria", "Obando", "Palmira", "Pradera", "Restrepo", "Riofrío", "Roldanillo",
+        "San Jerónimo", "San Juan del Valle", "San Pedro", "Santa Bárbara", "Santa Cruz", "Sevilla", "Toro", 
+        "Tuluá", "Ulloa", "Uncía", "Versalles", "Vijes"
+] 
 
     ciudades_norm = [c.lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
                      for c in ciudades]
@@ -168,36 +166,28 @@ def extract_budget(text):
 def extract_phone(text):
     if not text:
         return None
-    # Quitar todo lo que no sea número
-    phone = re.sub(r"\D", "", text)
-    # El número debe tener entre 7 y 15 dígitos para considerarse válido
-    if len(phone) < 7 or len(phone) > 15:
-        return None
-    return phone
-
-def extract_phone(text):
-    # quitar todo lo que no sea número
+    
     phone = re.sub(r"\D", "", text)
     if not phone:
-        return phone 
-
-    # si viene con +57, quítalo
+        return None
+        
     if phone.startswith("57") and len(phone) > 10:
         phone = phone[2:]
 
-    # si tiene prefijo internacional
     if phone.startswith("573") and len(phone) > 10:
         phone = phone[3:]
 
-    # validar tamaño colombiano
+    if len(digits) == 10 and digits.startswith("3"):
+        return digits
+
+    # fijos: 7 dígitos
+    if len(digits) == 7:
+        return digits
+
     if 7 <= len(phone) <= 15:
         return phone
-       
-    return None 
-
-
-
-
+    return None
+    
 # ==============================================
 # MODELLO DE INTENTOS Y SEMÁNTICA
 # ==============================================
@@ -231,9 +221,10 @@ def process_confirmation(msg, state):
     msg = limpiar_trigger(msg).lower().strip()
     field = state.get("confirming")
 
-    if not field: return "No entendí, repite por favor."
+    if not field: 
+        return "No entendí, repite por favor."
 
-    if msg in ["si","sí","claro","correcto","ok"]:
+    if msg in ["si","sí","claro","correcto","ok","sisas","s"]:
         state["confirming"] = None
 
         if field == "nombre":
@@ -252,15 +243,8 @@ def process_confirmation(msg, state):
             state["last_action"]="save_phone"
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
-        if field=="teléfono":
-           guardar_en_google_sheets(
-                modo=state["modo"], name=state["name"], city=state["city"],
-                budget=state["budget"], phone=state["phone"]
-    )
-
-           state["confirming"] = None
-           state["last_action"] = None
-
+state["confirming"] = None
+return f"Ok, repíteme tu {field}."
  
 
 # ==============================================
@@ -280,7 +264,7 @@ def handle_action(msg, state):
     if state["last_action"]=="save_city":
         c=extract_city(msg)
         if c: state["city"]=c; return confirm_value("ciudad",c,state)
-        return "No reconocí la ciudad 🤔 intenta escribiendo solo *Cali*"
+        return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
     if state["last_action"]=="save_budget":
         b=extract_budget(msg)
@@ -289,7 +273,10 @@ def handle_action(msg, state):
 
     if state["last_action"]=="save_phone":
         p=extract_phone(msg)
-        if p: state["phone"]=p; return confirm_value("telefono",p,state)
+        if p: 
+            state["phone"] = p
+            return confirm_value("telefono", p, state)
+ 
         return (
             "No logro leer tu número 📵\n"
             "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
@@ -299,9 +286,30 @@ def handle_action(msg, state):
             "📌 +57 314 523 2968\n"
         )
         state["phone"] = p
-        return confirm_value("teléfono", p, state)
+        
+    # Enviar a sheet
+        try:
+            guardar_en_google_sheets(
+                modo=state["modo"],
+                name=state["name"],
+                city=state["city"],
+                budget=state["budget"],
+                phone=state["phone"]
+            )
+        except:
+            pass
 
-return "✔ Registro guardado.\nUn asesor te contactará pronto 💌"
+        # limpiar flujo
+        state["last_action"] = None
+        state["confirming"] = None
+
+        return (
+            "Perfecto ✔️ Registro guardado.\n"
+            "✔ Un asesor te contactará pronto 💌"
+        )
+
+
+    return None
 
 
 # ==============================================
@@ -327,7 +335,8 @@ def chatbot(msg, state):
 
     if state["last_action"]:
         forced = handle_action(msg, state)
-        if forced: return forced
+        if forced: 
+            return forced
 
     cleaned = clean_text(msg)
     intent = intent_model.predict(vectorizer.transform([cleaned]))[0]
@@ -374,6 +383,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
