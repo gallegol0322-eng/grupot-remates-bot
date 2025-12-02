@@ -167,26 +167,29 @@ def extract_phone(text):
     if not text:
         return None
     
+    # quitar todo lo que no sea número
     phone = re.sub(r"\D", "", text)
     if not phone:
         return None
         
-    if phone.startswith("57") and len(phone) > 10:
+    # quitar prefijo +57 o 57
+    if phone.startswith("57"):
         phone = phone[2:]
 
-    if phone.startswith("573") and len(phone) > 10:
-        phone = phone[3:]
+    # si comienza con 3 y tiene 10 dígitos (cel colombiano)
+    if len(phone) == 10 and phone.startswith("3"):
+        return phone
 
-    if len(digits) == 10 and digits.startswith("3"):
-        return digits
+    # si tiene 7 dígitos (línea fija)
+    if len(phone) == 7:
+        return phone
 
-    # fijos: 7 dígitos
-    if len(digits) == 7:
-        return digits
-
+    # aceptar números largos internacionales 7 a 15
     if 7 <= len(phone) <= 15:
         return phone
+
     return None
+
     
 # ==============================================
 # MODELLO DE INTENTOS Y SEMÁNTICA
@@ -271,20 +274,23 @@ def handle_action(msg, state):
         return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
     if state["last_action"]=="save_phone":
-        p=extract_phone(msg)
-        if p: 
-            state["phone"] = p
-            return confirm_value("telefono", p, state)
- 
-        return (
-            "No logro leer tu número 📵\n"
-            "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
-            "📌 314 523 2968\n"
-            "📌 314-523-2968\n"
-            "📌 314.523.2968\n"
-            "📌 +57 314 523 2968\n"
-        )
-        state["phone"] = p
+       p = extract_phone(msg)
+
+    # Si pude leer el número → confirmar
+       if p:
+             state["phone"] = p
+             return confirm_value("teléfono", p, state)
+
+    # Si no entendí el número → pedir de nuevo
+       return (
+          "No logro leer tu número 📵\n"
+          "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
+          "📌 314 523 2968\n"
+          "📌 314-523-2968\n"
+          "📌 314.523.2968\n"
+          "📌 +57 314 523 2968\n"
+    )
+
         
     # Enviar a sheet
         try:
@@ -382,6 +388,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
