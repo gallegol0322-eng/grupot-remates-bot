@@ -293,7 +293,7 @@ def handle_action(msg, state):
 
         
     # Enviar a sheet
-        try:
+    try:
             guardar_en_google_sheets(
                 modo=state["modo"],
                 name=state["name"],
@@ -301,14 +301,14 @@ def handle_action(msg, state):
                 budget=state["budget"],
                 phone=state["phone"]
             )
-        except:
+    except:
             pass
 
         # limpiar flujo
         state["last_action"] = None
         state["confirming"] = None
 
-        return (
+    return (
             "Perfecto ✔️ Registro guardado.\n"
             "✔ Un asesor te contactará pronto 💌"
         )
@@ -388,6 +388,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
