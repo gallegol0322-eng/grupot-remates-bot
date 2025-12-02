@@ -280,17 +280,29 @@ def handle_action(msg, state):
         
     if state["last_action"]=="save_name":
         n=extract_name(msg)
-        if n: state["name"]=n; return confirm_value("nombre",n,state)
+        
+        if n: 
+            state["name"]=n 
+            state["confirming"] = "nombre"
+            return f"¿Tu nombre es {n}? (sí / no)"
+            
         return "No entendí tu nombre 🙈"
 
     if state["last_action"]=="save_city":
         c=extract_city(msg)
-        if c: state["city"]=c; return confirm_value("ciudad",c,state)
+        
+        if c: 
+            state["city"]=c
+            state["confirming"] = "ciudad"
+            return f"¿Tu ciudad es {c}? (sí / no)"
+            
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
     if state["last_action"]=="save_budget":
         b=extract_budget(msg)
-        if b: state["budget"]=b; return confirm_value("presupuesto",f"${b:,}",state)
+        if b: 
+            state["budget"]=b
+            return confirm_value("presupuesto",f"${b:,}",state)
         return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
     if state["last_action"]=="save_phone":
@@ -385,6 +397,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
