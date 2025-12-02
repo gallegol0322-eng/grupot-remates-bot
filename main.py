@@ -247,26 +247,7 @@ def process_confirmation(msg, state):
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
         return f"Ok, repíteme tu {field}."
-        
-        if field == "telefono":
-          try:
-              guardar_en_google_sheets(
-              modo=state["modo"],
-              name=state["name"],
-              city=state["city"],
-              budget=state["budget"],
-              phone=state["phone"]
-          )
-          except:
-                pass
 
-          state["last_action"] = None
-          state["confirming"] = None
-
-          return (
-           "Perfecto ✔️ Registro guardado.\n"
-           "Un asesor te contactará pronto 💌"
-           )
 
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / PRESUPUESTO / TELÉFONO
@@ -384,6 +365,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
