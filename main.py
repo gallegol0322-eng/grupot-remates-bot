@@ -216,7 +216,6 @@ def confirm_value(field, value, state):
     state["confirming"] = field
     return f"¿Tu {field} es {value}? (sí / no)"
 
-
 def process_confirmation(msg, state):
     field = state.get("confirming")
 
@@ -226,6 +225,11 @@ def process_confirmation(msg, state):
     # Respuestas afirmativas
     if msg in ["si","sí","claro","correcto","ok","sisas","s"]:
         state["confirming"] = None
+
+    # Respuesta negativa
+    if msg in ["no","nop","nel","nope","ño"]:
+        state["confirming"] = None
+        return f"Ok, repíteme tu {field}."
 
         if field == "nombre":
             state["last_action"] = "save_city"
@@ -261,12 +265,6 @@ def process_confirmation(msg, state):
 
         return "Listo."
 
-    # Respuesta negativa
-    if msg in ["no","nop","nel","nope","ño"]:
-        state["confirming"] = None
-        return f"Ok, repíteme tu {field}."
-
-    return "¿Sí o no?"
 
 
 
@@ -397,6 +395,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
