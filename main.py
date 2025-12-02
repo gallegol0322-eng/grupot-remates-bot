@@ -175,6 +175,23 @@ def extract_phone(text):
         return None
     return phone
 
+def extract_phone(text):
+    # quitar todo lo que no sea número
+    phone = re.sub(r"\D", "", text)
+
+    # si viene con +57, quítalo
+    if phone.startswith("57") and len(phone) > 10:
+        phone = phone[2:]
+
+    # si tiene prefijo internacional
+    if phone.startswith("573") and len(phone) > 10:
+        phone = phone[3:]
+
+    # validar tamaño colombiano
+    if 7 <= len(phone) <= 15:
+       
+    return None
+
 
 
 
@@ -232,17 +249,16 @@ def process_confirmation(msg, state):
             state["last_action"]="save_phone"
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
-        if field=="phone":
-            guardar_en_google_sheets(
+        if field=="teléfono":
+           guardar_en_google_sheets(
                 modo=state["modo"], name=state["name"], city=state["city"],
                 budget=state["budget"], phone=state["phone"]
-            )
-            return f"✔ Registro guardado.\nUn asesor te contactará pronto 📩"
+    )
 
-    state[field]=None
-    state["confirming"]=None
-    return f"Ok, repíteme tu {field}."
+           state["confirming"] = None
+           state["last_action"] = None
 
+ 
 
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / PRESUPUESTO / TELÉFONO
@@ -270,10 +286,19 @@ def handle_action(msg, state):
 
     if state["last_action"]=="save_phone":
         p=extract_phone(msg)
-        if p: state["phone"]=p; return confirm_value("phone",p,state)
-        return "No logro reconocerlo, escribe tu numero con espacios así: *314 123 4567*"
+        if p: state["phone"]=p; return confirm_value("telefono",p,state)
+        return (
+            "No logro leer tu número 📵\n"
+            "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
+            "📌 314 523 2968\n"
+            "📌 314-523-2968\n"
+            "📌 314.523.2968\n"
+            "📌 +57 314 523 2968\n"
+        )
+        state["phone"] = p
+        return confirm_value("teléfono", p, state)
 
-
+return "✔ Registro guardado.\nUn asesor te contactará pronto 💌"
 
 
 # ==============================================
@@ -346,6 +371,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
