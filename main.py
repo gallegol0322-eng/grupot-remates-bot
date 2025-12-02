@@ -224,10 +224,10 @@ def process_confirmation(msg, state):
         return "No entendí, repite por favor."
 
     # Respuestas afirmativas
-    afirmb = ["si","sí","claro","correcto","ok","sisas","s"]:
+    afirmb = ["si","sí","claro","correcto","ok","sisas","s"]
 
     # Respuesta negativa
-    neg = ["no","nop","nel","nope","ño","n"]:
+    neg = ["no","nop","nel","nope","ño","n"]
     
     if msg in afirm: 
         state["confirmg"] = None
@@ -423,6 +423,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
