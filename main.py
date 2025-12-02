@@ -224,29 +224,54 @@ def process_confirmation(msg, state):
     msg = limpiar_trigger(msg).lower().strip()
     field = state.get("confirming")
 
-    if not field: 
+    if not field:
         return "No entendí, repite por favor."
 
+    # Respuestas afirmativas
     if msg in ["si","sí","claro","correcto","ok","sisas","s"]:
         state["confirming"] = None
 
         if field == "nombre":
-            state["last_action"]="save_city"
+            state["last_action"] = "save_city"
             return f"Genial {state['name']} 😊 ¿De qué ciudad nos escribes?"
 
         if field == "ciudad":
-            if state["modo"]=="invertir":
-                state["last_action"]="save_budget"
+            if state["modo"] == "invertir":
+                state["last_action"] = "save_budget"
                 return f"{state['name']}, ¿cuál es tu presupuesto? Ej: 5 millones"
             else:
-                state["last_action"]="save_phone"
+                state["last_action"] = "save_phone"
                 return f"{state['name']} ¿tu número de WhatsApp?"
 
-        if field=="presupuesto":
-            state["last_action"]="save_phone"
+        if field == "presupuesto":
+            state["last_action"] = "save_phone"
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
+        if field == "telefono":
+            # Guardar en Google Sheets
+            try:
+                guardar_en_google_sheets(
+                    modo=state["modo"],
+                    name=state["name"],
+                    city=state["city"],
+                    budget=state["budget"],
+                    phone=state["phone"]
+                )
+            except:
+                pass
+
+            state["last_action"] = None
+            return "Perfecto ✔️ Registro guardado.\nUn asesor te contactará pronto 💌"
+
+        return "Listo."
+
+    # Respuesta negativa
+    if msg in ["no","nop","nel","nope","ño"]:
+        state["confirming"] = None
         return f"Ok, repíteme tu {field}."
+
+    return "¿Sí o no?"
+
 
 
 # ==============================================
@@ -365,6 +390,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
