@@ -243,7 +243,6 @@ def process_confirmation(msg, state):
             state["last_action"]="save_phone"
             return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
-     state["confirming"] = None
      return f"Ok, repíteme tu {field}."
  
 
@@ -383,6 +382,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
