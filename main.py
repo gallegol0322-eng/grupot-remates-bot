@@ -33,7 +33,6 @@ def get_state(uid):
 #  📌  EXTRACCIÓN DE DATOS DEL USUARIO
 # ==============================================
 def extract_name(text):
-    text = limpiar_trigger(text)
     text = text.lower().strip()
     text = re.sub(r"[^a-zA-Záéíóúñ ]", "", text)
 
@@ -49,7 +48,6 @@ def extract_name(text):
 
 
 def extract_city(text):
-    text = limpiar_trigger(text)
     text = text.lower().strip()
     text = re.sub(r"(desde|soy de|estoy en|vivo en|ciudad de|de|en)\s+", "", text)
     norm = (text.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"))
@@ -150,7 +148,6 @@ def extract_city(text):
 
 
 def extract_budget(text):
-    text = limpiar_trigger(text)
     text = text.lower().replace(".", "").replace(",", "").strip()
 
     m = re.search(r"(\d+)\s*millones?", text)
@@ -221,7 +218,6 @@ def confirm_value(field, value, state):
 
 
 def process_confirmation(msg, state):
-    msg = limpiar_trigger(msg).lower().strip()
     field = state.get("confirming")
 
     if not field:
@@ -278,7 +274,6 @@ def process_confirmation(msg, state):
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / PRESUPUESTO / TELÉFONO
 # ==============================================
 def handle_action(msg, state):
-    msg = limpiar_trigger(msg).lower().strip()
 
     if state["confirming"]:
         return process_confirmation(msg, state)
@@ -390,6 +385,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
