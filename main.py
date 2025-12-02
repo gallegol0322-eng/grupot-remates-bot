@@ -217,20 +217,21 @@ def confirm_value(field, value, state):
     return f"¿Tu {field} es {value}? (sí / no)"
 
 def process_confirmation(msg, state):
+    msg = msg.lower().strip()
     field = state.get("confirming")
 
     if not field:
         return "No entendí, repite por favor."
 
     # Respuestas afirmativas
-    if msg in ["si","sí","claro","correcto","ok","sisas","s"]:
-        state["confirming"] = None
+    afirmb = ["si","sí","claro","correcto","ok","sisas","s","se"]:
 
     # Respuesta negativa
-    if msg in ["no","nop","nel","nope","ño"]:
-        state["confirming"] = None
-        return f"Ok, repíteme tu {field}."
-
+    neg = ["no","nop","nel","nope","ño","n","na"]:
+    
+    if msg in afirm: 
+        state["confirmg"] = None
+        
         if field == "nombre":
             state["last_action"] = "save_city"
             return f"Genial {state['name']} 😊 ¿De qué ciudad nos escribes?"
@@ -264,6 +265,33 @@ def process_confirmation(msg, state):
             return "Perfecto ✔️ Registro guardado.\nUn asesor te contactará pronto 💌"
 
         return "Listo."
+        
+    if msg in neg: 
+        state["confirming"] = None
+
+        if field == "nombre":
+            state["last_action"] = "save_name"
+            return "Vale, dime de nuevo tu nombre completo 😊"
+
+        if field == "ciudad":
+            state["last_action"] = "save_city"
+            return "Listo, escribe de nuevo tu ciudad."
+
+        if field == "presupuesto":
+            state["last_action"] = "save_budget"
+            return "Ok, dime otra vez tu presupuesto (ej: 5 millones)."
+
+        if field == "telefono":
+            state["last_action"] = "save_phone"
+            return "Ok, escríbeme de nuevo tu número de WhatsApp."
+
+        return f"Ok, repíteme tu {field}."
+
+    # si responde algo raro
+    return "¿Sí o no?"
+        
+
+    
 
 
 
@@ -395,6 +423,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
