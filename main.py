@@ -178,6 +178,8 @@ def extract_phone(text):
 def extract_phone(text):
     # quitar todo lo que no sea número
     phone = re.sub(r"\D", "", text)
+    if not phone:
+        return phone 
 
     # si viene con +57, quítalo
     if phone.startswith("57") and len(phone) > 10:
@@ -189,8 +191,9 @@ def extract_phone(text):
 
     # validar tamaño colombiano
     if 7 <= len(phone) <= 15:
+        return phone
        
-    return None
+    return None 
 
 
 
@@ -371,6 +374,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
