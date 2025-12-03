@@ -10,3 +10,8 @@ transformers==4.30.2
 sentence-transformers==2.2.2
 huggingface-hub==0.14.1
 requests==2.32.5
+
+google-auth
+google-auth-oauthlib
+
+
