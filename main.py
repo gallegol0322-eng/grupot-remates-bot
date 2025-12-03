@@ -20,7 +20,6 @@ def get_state(uid):
         user_states[uid] = {
             "name": None,
             "city": None,
-            "budget": None,
             "phone": None,
             "modo": None,
             "last_action": None,
@@ -146,20 +145,6 @@ def extract_city(text):
     return mapa.get(norm)
 
 
-
-def extract_budget(text):
-    text = text.lower().replace(".", "").replace(",", "").strip()
-
-    m = re.search(r"(\d+)\s*millones?", text)
-    if m: return int(m.group(1)) * 1_000_000
-
-    nums = re.sub(r"\D", "", text)
-    if nums.isdigit() and len(nums) >= 4:
-        return int(nums)
-
-    return None
-
-
 def extract_phone(text):
     if not text:
         return None
@@ -237,16 +222,9 @@ def process_confirmation(msg, state):
             return f"Genial {state['name']} 😊 ¿De qué ciudad nos escribes?"
 
         if field == "ciudad":
-            if state["modo"] == "invertir":
-                state["last_action"] = "save_budget"
-                return f"{state['name']}, ¿cuál es tu presupuesto? Ej: 5 millones"
-            else:
-                state["last_action"] = "save_phone"
-                return f"{state['name']} ¿tu número de WhatsApp?"
+           state["last_action"] = "save_phone"
+           return f"{state['name']} ¿tu número de WhatsApp?"
 
-        if field == "presupuesto":
-            state["last_action"] = "save_phone"
-            return f"Perfecto 💰 ahora dame tu número de WhatsApp."
 
         if field == "telefono":
             # Guardar en Google Sheets
@@ -255,7 +233,6 @@ def process_confirmation(msg, state):
                     modo=state["modo"],
                     name=state["name"],
                     city=state["city"],
-                    budget=state["budget"],
                     phone=state["phone"]
                 )
             except:
@@ -277,10 +254,6 @@ def process_confirmation(msg, state):
             state["last_action"] = "save_city"
             return "Listo, escribe de nuevo tu ciudad."
 
-        if field == "presupuesto":
-            state["last_action"] = "save_budget"
-            return "Ok, dime otra vez tu presupuesto (ej: 5 millones)."
-
         if field == "telefono":
             state["last_action"] = "save_phone"
             return "Ok, escríbeme de nuevo tu número de WhatsApp."
@@ -289,15 +262,9 @@ def process_confirmation(msg, state):
 
     # si responde algo raro
     return "¿Sí o no?"
-        
-
-    
-
-
-
-
+  
 # ==============================================
-# MANEJO POR ETAPAS NOMBRE / CIUDAD / PRESUPUESTO / TELÉFONO
+# MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
 # ==============================================
 def handle_action(msg, state):
 
@@ -324,12 +291,6 @@ def handle_action(msg, state):
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
-    if state["last_action"]=="save_budget":
-        b=extract_budget(msg)
-        if b: 
-            state["budget"]=b
-            return confirm_value("presupuesto",f"${b:,}",state)
-        return "Dime tu presupuesto así:\n**5 millones** o **5000000**"
 
     if state["last_action"]=="save_phone":
         p = extract_phone(msg)
@@ -387,7 +348,6 @@ def chatbot(msg, state):
             r = i["responses"][0]
             return (r.replace("{name}", state["name"] or "")
                      .replace("{city}", state["city"] or "")
-                     .replace("{budget}", f"${state['budget']:,}" if state["budget"] else "")
                      .replace("{phone}", state["phone"] or ""))
 
     sem = find_semantic(msg)
@@ -429,4 +389,5 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
