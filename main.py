@@ -82,7 +82,7 @@ def extract_city(text):
         "Cali","Canalete","Candelaria (Atlántico)","Candelaria (Valle)","Cantagallo",
         "Cantón de San Pablo","Caparrapí","Capitanejo","Cáqueza","Caracolí","Caramanta",
         "Carcasí","Carepa","Carmen de Apicalá","Carmen de Carupa","Carmen de Viboral",
-        "Carmen del Darién","Carolina","Cartagena de Indias","Cartago","Carurú","Casabianca",
+        "Carmen del Darién","Carolina","Cartagena de Indias","cartagena","Cartago","Carurú","Casabianca",
         "Castilla la Nueva","Caucasia","Cañasgordas","Cepitá","Cereté","Cerinza","Cerrito",
         "Cerro San Antonio","Cértegui","Chachagüí","Chaguaní","Chalán","Chaparral","Charalá",
         "Charta","Chía","Chigorodó","Chima (Santander)","Chimá (Córdoba)","Chimichagua",
@@ -410,11 +410,17 @@ def webhook():
 
     msg=data.get("message") or data.get("text") or data.get("comment") or ""
 
+    if not msg: 
+        phone_field = data.get("phone")
+        if phone_field:
+            msg = str(phone_field)
+        else:
+            msg = ""
+
     state=get_state(uid)
     respuesta=chatbot(msg,state)
 
     return jsonify({"respuesta":respuesta}),200
-
 
 @app.route("/",methods=["GET"])
 def home():
@@ -423,4 +429,3 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
-
