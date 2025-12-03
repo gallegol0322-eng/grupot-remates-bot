@@ -230,7 +230,7 @@ def process_confirmation(msg, state):
     neg = ["no","nop","nel","nope","ño","n"]
     
     if msg in afirm: 
-        state["confirmg"] = None
+        state["confirming"] = None
         
         if field == "nombre":
             state["last_action"] = "save_city"
@@ -423,3 +423,4 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
