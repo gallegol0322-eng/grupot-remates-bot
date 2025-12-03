@@ -361,7 +361,7 @@ def chatbot(msg, state):
 
     
         # reset corto
-    if m == "cancelar":
+    if "Can" in m:
         state.update({
             "name":None,"city":None,"budget":None,"phone":None,
             "modo":None,"last_action":None,"confirming":None
@@ -442,4 +442,5 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
