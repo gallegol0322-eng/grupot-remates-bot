@@ -25,8 +25,9 @@ def guardar_en_google_sheets(modo, name, city, budget, phone):
     try:
         worksheet = sh.worksheet(hoja)
     except gspread.WorksheetNotFound:
-        worksheet = sh.add_worksheet(title=clientes_bot, rows="1000", cols="20")
+        worksheet = sh.add_worksheet(title=hoja, rows="1000", cols="20")
 
     worksheet.append_row([name, city, budget, phone])
     print(f"✔ Guardado en Google Sheets — hoja «{hoja}»")
+
 
