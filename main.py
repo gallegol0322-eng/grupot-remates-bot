@@ -362,12 +362,12 @@ def chatbot(msg, state):
     
         # reset corto
     # reset corto
-    if "cancel" in m:  # o "cancelar" si prefieres
+if "cancel" in m:  # o "cancelar" si prefieres
         state.update({
               "name":None,"city":None,"budget":None,"phone":None,
               "modo":None,"last_action":None,"confirming":None
     })
-    return "Proceso cancelado. Empecemos de nuevo.\n¿Deseas aprender o invertir?"
+return "Proceso cancelado. Empecemos de nuevo.\n¿Deseas aprender o invertir?"
 
 
 
@@ -444,6 +444,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
