@@ -12,7 +12,7 @@ HOJAS = {
     "aprender": "aprender"
 }
 
-def guardar_en_google_sheets(modo, name, city, budget, phone):
+def guardar_en_google_sheets(modo, name, city, phone):
     """
     Guarda un registro en Google Sheets según el modo (invertir/aprender).
     """
@@ -57,5 +57,6 @@ def guardar_en_google_sheets(modo, name, city, budget, phone):
 
 
     print(f"✔ Guardado en Google Sheets — hoja «{hoja}»")
+
 
 
