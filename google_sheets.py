@@ -47,7 +47,6 @@ def guardar_en_google_sheets(modo, name, city, phone):
     # convertir valores para evitar None
     name = name or ""
     city = city or ""
-    budget = budget or ""
     phone = phone or ""
 
     # insertar fila
@@ -57,6 +56,7 @@ def guardar_en_google_sheets(modo, name, city, phone):
 
 
     print(f"✔ Guardado en Google Sheets — hoja «{hoja}»")
+
 
 
 
