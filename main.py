@@ -358,6 +358,19 @@ def handle_action(msg, state):
 def chatbot(msg, state):
     m = msg.lower().strip()
 
+
+    
+        # reset corto
+    if m == "cancelar":
+        state.update({
+            "name":None,"city":None,"budget":None,"phone":None,
+            "modo":None,"last_action":None,"confirming":None
+        })
+        return "Proceso cancelado. Empecemos de nuevo.\n¿Deseas aprender o invertir?"
+
+
+
+    
     if "asesor" in m:
         return "Contacto directo 👇 https://wa.me/573160422795"
 
@@ -429,3 +442,4 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
