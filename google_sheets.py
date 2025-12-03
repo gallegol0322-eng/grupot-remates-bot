@@ -42,7 +42,7 @@ def guardar_en_google_sheets(modo, name, city, budget, phone):
     except gspread.WorksheetNotFound:
         worksheet = sh.add_worksheet(title=hoja, rows="1000", cols="20")
         # escribir encabezados si la creamos
-        worksheet.update("A1:D1", [["nombre", "ciudad", "presupuesto", "telefono"]])
+        worksheet.update("A1:E1", [["nombre", "ciudad", "presupuesto", "telefono", "fecha"]])
 
     # convertir valores para evitar None
     name = name or ""
@@ -51,6 +51,10 @@ def guardar_en_google_sheets(modo, name, city, budget, phone):
     phone = phone or ""
 
     # insertar fila
-    worksheet.append_row([name, city, budget, phone])
+    import datetime
+    fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    worksheet.append_row([name, city, budget, phone, fecha])
+
 
     print(f"✔ Guardado en Google Sheets — hoja «{hoja}»")
+
