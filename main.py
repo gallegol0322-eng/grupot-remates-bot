@@ -223,7 +223,7 @@ def process_confirmation(msg, state):
 
         if field == "ciudad":
            state["last_action"] = "save_phone"
-           return f"{state['name']} regalame porfavor tu numero de telefono de esta forma: (mi numero es 3141234567)"
+           return f"{state['name']} regalame porfavor tu numero de telefono con tu inicial de nombre primero. Ejemplo: (R 3141234567)"
 
 
         if field == "telefono":
@@ -336,7 +336,7 @@ def chatbot(msg, state):
         if "invertir" in m:
             state["modo"]="invertir"; state["last_action"]="save_name"
             return "Excelente 💼 ¿Tu nombre completo?"
-        return "¿Deseas *aprender* o *invertir*? 🤔"
+        return "Ahora dime. ¿deseas *aprender* o *invertir*? 🤔"
 
     if state["confirming"]:
         return process_confirmation(msg, state)
@@ -396,6 +396,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
