@@ -223,7 +223,7 @@ def process_confirmation(msg, state):
 
         if field == "ciudad":
            state["last_action"] = "save_phone"
-           return f"{state['name']} regalame porfavor tu numero de telefono con tu inicial de nombre primero. Ejemplo: (R 3141234567)"
+           return f"{state['name']} regalame porfavor tu numero de telefono seguido de tu primer nombre. Ejemplo: (Juan 3141234567)"
 
 
         if field == "telefono":
@@ -396,6 +396,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
