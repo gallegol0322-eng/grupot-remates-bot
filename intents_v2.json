@@ -16,7 +16,7 @@
         "que onda"
       ],
       "responses": [
-        "Hola, regalame tu primer nombre y primer apellido"
+        "💼 Hola, ¿Cuál es tu nombre completo? 🤓"
       ],
       "next_action": "save_name"
     },
@@ -126,10 +126,10 @@
         "quiero ver casas en {city}"
       ],
       "responses": [
-        "Listo, buscaré propiedades en {city}. ¿Cuál es tu presupuesto?",
-        "Perfecto, reviso opciones en {city}. ¿Qué presupuesto manejas?"
+        "Listo, buscaré propiedades en {city}.",
+        "Perfecto, reviso opciones en {city}."
       ],
-      "next_action": "save_budget"
+      "next_action": "save_city"
     },
     {
       "tag": "budget",
@@ -176,6 +176,7 @@
     }
   ]
 }
+
 
 
 
