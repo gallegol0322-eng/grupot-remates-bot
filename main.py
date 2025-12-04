@@ -223,7 +223,7 @@ def process_confirmation(msg, state):
 
         if field == "ciudad":
            state["last_action"] = "save_phone"
-           return f"{state['name']} ¿tu número de WhatsApp?"
+           return f"{state['name']} regalame porfavor tu numero de telefono de esta forma: (mi numero es 3141234567)"
 
 
         if field == "telefono":
@@ -256,7 +256,7 @@ def process_confirmation(msg, state):
 
         if field == "telefono":
             state["last_action"] = "save_phone"
-            return "Ok, escríbeme de nuevo tu número de WhatsApp."
+            return "Ok, escríbeme de nuevo tu número de WhatsAp."
 
         return f"Ok, repíteme tu {field}."
 
@@ -396,6 +396,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
