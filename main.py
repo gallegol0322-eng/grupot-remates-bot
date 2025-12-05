@@ -337,7 +337,7 @@ def chatbot(msg, state):
             state["modo"]="invertir"; state["last_action"]="save_name"
             return "Excelente 💼 ¿Tu nombre completo?"
         return [
-            "En cualquier momento escribe la palabra "asesor" para hablar con un experto."
+            "En cualquier momento escribe la palabra \"asesor"\ para hablar con un experto."
             "Ahora dime. ¿deseas *aprender* o *invertir*? 🤔"
         ]
 
@@ -399,6 +399,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
