@@ -37,10 +37,10 @@ def extract_name(text):
 
     match = re.search(r"(me llamo|mi nombre es|soy)\s+([a-zA-Záéíóúñ ]+)", text)
     if match:
-        name = match.group(2).strip()
-        if 1 <= len(name.split()) <= 3: return name.title()
+        name = match.group(4).strip()
+        if 1 <= len(name.split()) <= 4: return name.title()
    
-    if 1 <= len(text.split()) <= 3:
+    if 1 <= len(text.split()) <= 4:
         return text.title()
 
     return None
@@ -399,6 +399,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
