@@ -326,7 +326,7 @@ def chatbot(msg, state):
               })
         return "Proceso cancelado. Volvamos a empezar 😊\n¿Deseas aprender o invertir?"
 
-    if "asesor" in m:
+    if "asesor" in m or "asesoria" in m:
         return "Contacto directo 👇 https://wa.me/573160422795"
 
     if state["modo"] is None:
@@ -396,6 +396,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
