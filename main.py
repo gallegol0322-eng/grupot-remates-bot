@@ -31,19 +31,35 @@ def get_state(uid):
 # ==============================================
 #  📌  EXTRACCIÓN DE DATOS DEL USUARIO
 # ==============================================
+
 def extract_name(text):
+    if not text:
+        return None
+
+    # Normalización inicial
     text = text.lower().strip()
-    text = re.sub(r"[^a-zA-Záéíóúñ ]", "", text)
+    text = re.sub(r"[^a-záéíóúñ ]", "", text)
 
-    match = re.search(r"(me llamo|mi nombre es|soy)\s+([a-zA-Záéíóúñ ]+)", text)
+    # Buscar expresiones comunes
+    match = re.search(r"(me llamo|mi nombre es|soy)\s+(.*)", text)
     if match:
-        name = match.group(4).strip()
-        if 1 <= len(name.split()) <= 4: return name.title()
-   
-    if 1 <= len(text.split()) <= 4:
-        return text.title()
+        name = match.group(2).strip()
+    else:
+        # si no hay patrón, usar todo el texto
+        name = text
 
-    return None
+    # separo por palabras
+    parts = name.split()
+
+    # si no hay partes válidas
+    if not parts:
+        return None
+
+    # tomar solo el primer nombre
+    primer_nombre = parts[0]
+
+    # capitalizar bonito
+    return primer_nombre.title()
 
 
 def extract_city(text):
@@ -399,6 +415,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
