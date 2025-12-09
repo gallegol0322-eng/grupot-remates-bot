@@ -357,11 +357,11 @@ def chatbot(msg, state):
             "¿Cuál es tu nombre completo?"
         )
 
-    if "aprender" in m:
+       if "aprender" in m:
         state["modo"] = "aprender"; state["last_action"] = "save_name"
         return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
 
-    if "invertir" in m:
+       if "invertir" in m:
         state["modo"] = "invertir"; state["last_action"] = "save_name"
         return "Excelente 💼 ¿Tu nombre completo?"
 
@@ -429,6 +429,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
