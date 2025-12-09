@@ -346,16 +346,30 @@ def chatbot(msg, state):
         return "Contacto directo 👇 https://wa.me/573160422795"
 
     if state["modo"] is None:
-        if "aprender" in m:
-            state["modo"]="aprender"; state["last_action"]="save_name"
-            return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
-        if "invertir" in m:
-            state["modo"]="invertir"; state["last_action"]="save_name"
-            return "Excelente 💼 ¿Tu nombre completo?"
-        return [
-            "En cualquier momento escribe la palabra *asesor* para hablar con un experto."
-            "Ahora dime. ¿deseas *aprender* o *invertir*? 🤔"
-        ]
+
+    # Caso especial: quiere las dos opciones
+    if "las dos" in m or "ambas" in m or ("aprender" in m and "invertir" in m):
+        state["modo"] = "invertir"          # Forzar modo invertir
+        state["last_action"] = "save_name"  # Empezar flujo normal
+        return (
+            "Perfecto 💼✨ Veo que quieres *aprender e invertir*.\n"
+            "Vamos a registrar tus datos para inversión.\n"
+            "¿Cuál es tu nombre completo?"
+        )
+
+    if "aprender" in m:
+        state["modo"] = "aprender"; state["last_action"] = "save_name"
+        return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
+
+    if "invertir" in m:
+        state["modo"] = "invertir"; state["last_action"] = "save_name"
+        return "Excelente 💼 ¿Tu nombre completo?"
+
+    return [
+        "En cualquier momento escribe la palabra \"asesor\" para hablar con un experto.",
+        "Ahora dime. ¿deseas *aprender* o *invertir*? 🤔"
+    ]
+
 
     if state["confirming"]:
         return process_confirmation(msg, state)
@@ -415,6 +429,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
