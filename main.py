@@ -11,7 +11,7 @@ from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, come
 app = Flask(__name__)
 
 # ==============================================
-#    CONTROL DE ESTADO POR USUARIO (CORRECTO)
+#    CONTROL DE ESTADO POR USUARIO
 # ==============================================
 user_states = {}
 
@@ -21,7 +21,7 @@ def get_state(uid):
             "name": None,
             "city": None,
             "phone": None,
-            "modo": None,
+            "modo": None,          # lo dejamos por compatibilidad, pero siempre será "invertir"
             "last_action": None,
             "confirming": None
         }
@@ -150,14 +150,17 @@ def extract_city(text):
         "La Cumbre", "La Unión", "La Victoria", "Obando", "Palmira", "Pradera", "Restrepo", "Riofrío", "Roldanillo",
         "San Jerónimo", "San Juan del Valle", "San Pedro", "Santa Bárbara", "Santa Cruz", "Sevilla", "Toro", 
         "Tuluá", "Ulloa", "Uncía", "Versalles", "Vijes"
-] 
+    ] 
 
-    ciudades_norm = [c.lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
-                     for c in ciudades]
+    ciudades_norm = [
+        c.lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
+        for c in ciudades
+    ]
     mapa = dict(zip(ciudades_norm, ciudades))
 
     for w in norm.split():
-        if w in mapa: return mapa[w]
+        if w in mapa:
+            return mapa[w]
     return mapa.get(norm)
 
 
@@ -188,7 +191,7 @@ def extract_phone(text):
 
     return None
 
-    
+
 # ==============================================
 # MODELLO DE INTENTOS Y SEMÁNTICA
 # ==============================================
@@ -238,9 +241,11 @@ def process_confirmation(msg, state):
             return f"Genial {state['name']} 😊 ¿De qué ciudad nos escribes?"
 
         if field == "ciudad":
-           state["last_action"] = "save_phone"
-           return f"{state['name']} regalame porfavor tu numero de telefono seguido de tu primer nombre. Ejemplo: (Juan 3141234567)"
-
+            state["last_action"] = "save_phone"
+            return (
+                f"{state['name']} regálame por favor tu número de teléfono "
+                "seguido de tu primer nombre. Ejemplo: (Juan 3141234567)"
+            )
 
         if field == "telefono":
             # Guardar en Google Sheets
@@ -272,13 +277,14 @@ def process_confirmation(msg, state):
 
         if field == "telefono":
             state["last_action"] = "save_phone"
-            return "Ok, escríbeme de nuevo tu número de WhatsAp."
+            return "Ok, escríbeme de nuevo tu número de WhatsApp."
 
         return f"Ok, repíteme tu {field}."
 
     # si responde algo raro
     return "¿Sí o no?"
   
+
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
 # ==============================================
@@ -287,90 +293,93 @@ def handle_action(msg, state):
     if state["confirming"]:
         return process_confirmation(msg, state)
         
-    if state["last_action"]=="save_name":
-        n=extract_name(msg)
+    if state["last_action"] == "save_name":
+        n = extract_name(msg)
         
         if n: 
-            state["name"]=n 
+            state["name"] = n 
             state["confirming"] = "nombre"
             return f"¿Tu nombre es {n}? (sí / no)"
             
         return "No entendí tu nombre 🙈"
 
-    if state["last_action"]=="save_city":
-        c=extract_city(msg)
+    if state["last_action"] == "save_city":
+        c = extract_city(msg)
         
         if c: 
-            state["city"]=c
+            state["city"] = c
             state["confirming"] = "ciudad"
             return f"¿Tu ciudad es {c}? (sí / no)"
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
-
-    if state["last_action"]=="save_phone":
+    if state["last_action"] == "save_phone":
         p = extract_phone(msg)
 
-    # Si pude leer el número → confirmar
+        # Si pude leer el número → confirmar
         if p:
-             state["phone"] = p
-             state["confirming"] = "telefono"
-             return f"¿Tu teléfono es {p}? (sí / no)"
+            state["phone"] = p
+            state["confirming"] = "telefono"
+            return f"¿Tu teléfono es {p}? (sí / no)"
 
-    # Si no entendí el número → pedir de nuevo
+        # Si no entendí el número → pedir de nuevo
         return (
-          "No logro leer tu número 📵\n"
-          "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
-          "📌 314 523 2968\n"
-          "📌 314-523-2968\n"
-          "📌 314.523.2968\n"
-          "📌 +57 314 523 2968\n"
-    )
+            "No logro leer tu número 📵\n"
+            "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
+            "📌 314 523 2968\n"
+            "📌 314-523-2968\n"
+            "📌 314.523.2968\n"
+            "📌 +57 314 523 2968\n"
+        )
+
     return None
 
 
 # ==============================================
-#  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
+#  ⚡ CHATBOT PRINCIPAL (MODO SOLO INVERTIR)
 # ==============================================
 def chatbot(msg, state):
     m = msg.lower().strip()
 
+    # Reset de conversación
     if "cancel" in m or "cancelar" in m:
         state.update({
-              "name":None,"city":None,"phone":None,
-              "modo":None,"last_action":None,"confirming":None
-              })
-        return "Proceso cancelado. Volvamos a empezar 😊\n¿Deseas aprender o invertir?"
+            "name": None,
+            "city": None,
+            "phone": None,
+            "modo": None,
+            "last_action": None,
+            "confirming": None
+        })
+        return "Proceso cancelado. Volvamos a empezar 😊\n¿Cuál es tu nombre completo?"
 
-    if "Asesor" in m or "Asesoria" in m:
+    # Atajo para hablar con asesor directamente
+    if "asesor" in m or "asesoría" in m or "asesoria" in m:
         return "Contacto directo 👇 https://wa.me/573160422795"
 
-# -----------------------
-#  MODO UNIFICADO: SOLO INVERTIR
-# -----------------------
-    m = msg.lower().strip()
+    # Protección por si ManyChat te manda "aprender" por error
+    if "aprender" in m:
+        return "Este canal es solo para inversión. Un asesor te apoyará con el tema de aprendizaje."
 
-# Palabras que deben redirigir al asesor (no iniciar flujo)
-    bloqueo_aprender = ["aprender", "curso", "estudiar", "formación", "formacion", "las dos", "ambas"]
-
-    if any(p in m for p in bloqueo_aprender):
-      return "Para temas de aprendizaje un asesor te atenderá directamente. Escríbele por favor."
-
-# Forzar modo invertir siempre
+    # -----------------------
+    #  MODO UNIFICADO: SOLO INVERTIR
+    # -----------------------
     if state["modo"] is None:
-       state["modo"] = "invertir"
-       state["last_action"] = "save_name"
-       return "Perfecto 💼 ¿Cuál es tu nombre completo?"
+        state["modo"] = "invertir"
+        state["last_action"] = "save_name"
+        return "Perfecto 💼 ¿Cuál es tu nombre completo?"
 
-
+    # Si está confirmando algo
     if state["confirming"]:
         return process_confirmation(msg, state)
 
+    # Si está en alguna etapa del flujo (nombre/ciudad/teléfono)
     if state["last_action"]:
         forced = handle_action(msg, state)
-        if forced: 
+        if forced:
             return forced
 
+    # Si no está en flujo forzado, usamos intents / semántica para respuestas normales
     cleaned = clean_text(msg)
     intent = intent_model.predict(vectorizer.transform([cleaned]))[0]
 
@@ -378,13 +387,15 @@ def chatbot(msg, state):
         if i["tag"] == intent:
             state["last_action"] = i.get("next_action")
             r = i["responses"][0]
-            return (r.replace("{name}", state["name"] or "")
-                     .replace("{city}", state["city"] or "")
-                     .replace("{phone}", state["phone"] or ""))
+            return (
+                r.replace("{name}", state["name"] or "")
+                 .replace("{city}", state["city"] or "")
+                 .replace("{phone}", state["phone"] or "")
+            )
 
     sem = find_semantic(msg)
     if sem:
-        state["last_action"]=sem.get("next_action")
+        state["last_action"] = sem.get("next_action")
         return sem["responses"][0]
 
     return "No logré entenderte 😅 prueba con otras palabras o escribe *asesor*."
@@ -395,12 +406,17 @@ def chatbot(msg, state):
 # ==============================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    data=request.get_json(force=True)
+    data = request.get_json(force=True)
 
-    uid=str(data.get("user_id") or data.get("sender_id") or 
-            data.get("contact_id") or data.get("profile_id") or "anon")
+    uid = str(
+        data.get("user_id")
+        or data.get("sender_id")
+        or data.get("contact_id")
+        or data.get("profile_id")
+        or "anon"
+    )
 
-    msg=data.get("message") or data.get("text") or data.get("comment") or ""
+    msg = data.get("message") or data.get("text") or data.get("comment") or ""
 
     if not msg: 
         phone_field = data.get("phone")
@@ -409,33 +425,16 @@ def webhook():
         else:
             msg = ""
 
-    state=get_state(uid)
-    respuesta=chatbot(msg,state)
+    state = get_state(uid)
+    respuesta = chatbot(msg, state)
 
-    return jsonify({"respuesta":respuesta}),200
+    return jsonify({"respuesta": respuesta}), 200
 
-@app.route("/",methods=["GET"])
+
+@app.route("/", methods=["GET"])
 def home():
-    return {"status":"online"},200
+    return {"status": "online"}, 200
 
 
-if __name__=="__main__":
-    app.run(host="0.0.0.0",port=5000)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
