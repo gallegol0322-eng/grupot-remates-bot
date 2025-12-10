@@ -348,57 +348,20 @@ def chatbot(msg, state):
 # -----------------------
 #  MODO UNIFICADO: SOLO INVERTIR
 # -----------------------
-m = msg.lower().strip()
+    m = msg.lower().strip()
 
 # Palabras que deben redirigir al asesor (no iniciar flujo)
-bloqueo_aprender = ["aprender", "curso", "estudiar", "formación", "formacion", "las dos", "ambas"]
+    bloqueo_aprender = ["aprender", "curso", "estudiar", "formación", "formacion", "las dos", "ambas"]
 
-if any(p in m for p in bloqueo_aprender):
-    return "Para temas de aprendizaje un asesor te atenderá directamente. Escríbele por favor."
+    if any(p in m for p in bloqueo_aprender):
+      return "Para temas de aprendizaje un asesor te atenderá directamente. Escríbele por favor."
 
 # Forzar modo invertir siempre
-if state["modo"] is None:
-    state["modo"] = "invertir"
-    state["last_action"] = "save_name"
-    return "Perfecto 💼 ¿Cuál es tu nombre completo?"
+    if state["modo"] is None:
+       state["modo"] = "invertir"
+       state["last_action"] = "save_name"
+       return "Perfecto 💼 ¿Cuál es tu nombre completo?"
 
-
-
-
-
-
-
-
-
-
-
-
-"""  
-if state["modo"] is None:
-
-    # Caso especial: quiere las dos opciones
-        if "las dos" in m or "ambas" in m or ("aprender" in m and "invertir" in m):
-           state["modo"] = "invertir"          # Forzar modo invertir
-           state["last_action"] = "save_name"  # Empezar flujo normal
-           return (
-               "Perfecto 💼✨ Veo que quieres *aprender e invertir*.\n"
-               "Vamos a registrar tus datos para inversión.\n"
-               "¿Cuál es tu nombre completo?"
-            )
-
-        if "aprender" in m:
-          state["modo"] = "aprender"; state["last_action"] = "save_name"
-          return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
-
-        if "invertir" in m:
-          state["modo"] = "invertir"; state["last_action"] = "save_name"
-          return "Excelente 💼 ¿Tu nombre completo?"
-
-        return [
-          "En cualquier momento escribe la palabra \"asesor\" para hablar con un experto.",
-          "Ahora dime. ¿deseas *aprender* o *invertir*? 🤔"
-    ]
-"""
 
     if state["confirming"]:
         return process_confirmation(msg, state)
@@ -458,6 +421,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
