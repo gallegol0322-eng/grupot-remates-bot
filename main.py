@@ -439,7 +439,7 @@ def webhook():
         data.get("contact_id") or
         data.get("profile_id") or
         "anon"
-    )
+        )
 
     msg = data.get("message") or data.get("text") or data.get("comment") or ""
     trigger = data.get("trigger")
@@ -454,3 +454,4 @@ def webhook():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
