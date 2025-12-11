@@ -369,6 +369,17 @@ def handle_action(msg, state):
 def chatbot(msg, state):
     m = msg.lower().strip()
 
+    # 1. Mensaje DIRECTO de ManyChat para iniciar flujo de inversión
+    if trigger == "start_invertir":
+        state["modo"] = "invertir"
+        state["last_action"] = "save_name"
+        return "Perfecto 💼 ¿Cuál es tu nombre completo?"
+
+    # 2. Si el modo no está activado, ignorar mensajes
+    if state["modo"] is None:
+        return "..."
+
+
     # Bloquear mensajes duplicados de ManyChat
     if state.get("last_msg") == msg:
        return None  # NO respondas si ya recibimos lo mismo
@@ -445,44 +456,22 @@ def chatbot(msg, state):
 def webhook():
     data = request.get_json(force=True)
 
-    uid = str(
-        data.get("user_id") or 
-        data.get("sender_id") or 
-        data.get("contact_id") or 
-        data.get("profile_id") or 
-        "anon"
-    )
-
-    # ManyChat puede mandar triggers personalizados
-    trigger = data.get("trigger")
-
-    # Activar flujo SOLO cuando ManyChat lo indique
-    if trigger == "start_invertir":
-        state = get_state(uid)
-        state.update({
-            "name": None,
-            "city": None,
-            "phone": None,
-            "modo": "invertir",
-            "last_action": "save_name",
-            "confirming": None
-        })
-        return jsonify({"respuesta": "Perfecto 💼 ¿Cuál es tu nombre completo?"})
-
-    # Si no hay trigger, seguimos flujo normal
+    uid = str(data.get("user_id") or data.get("sender_id") or data.get("contact_id") or data.get("profile_id") or "anon")
     msg = data.get("message") or data.get("text") or data.get("comment") or ""
-    if not msg:
-        phone_field = data.get("phone")
-        msg = str(phone_field) if phone_field else ""
+
+    trigger = data.get("trigger")  # <-- detectar si ManyChat activó el modelo
 
     state = get_state(uid)
-    respuesta = chatbot(msg, state)
+
+    respuesta = chatbot(msg, state, trigger=trigger)
 
     return jsonify({"respuesta": respuesta}), 200
 
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
