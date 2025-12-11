@@ -342,16 +342,17 @@ def chatbot(msg, state):
     m = msg.lower().strip()
 
     # Reset de conversación
-    if "cancel" in m or "cancelar" in m:
-        state.update({
-            "name": None,
-            "city": None,
-            "phone": None,
-            "modo": None,
-            "last_action": None,
-            "confirming": None
-        })
-        return "Proceso cancelado. Volvamos a empezar 😊\n¿Cuál es tu nombre completo?"
+    if m in ["cancel", "cancelar", "cance", "cancela", "reset"]:
+    state.update({
+        "name": None,
+        "city": None,
+        "phone": None,
+        "modo": None,
+        "last_action": None,
+        "confirming": None
+    })
+    return "Proceso cancelado. Empecemos de nuevo 😊 ¿Cuál es tu nombre?"
+
 
     # Atajo para hablar con asesor directamente
     if "asesor" in m or "asesoría" in m or "asesoria" in m:
@@ -366,8 +367,10 @@ def chatbot(msg, state):
     # -----------------------
     if state["modo"] is None:
         state["modo"] = "invertir"
-        state["last_action"] = "save_name"
-        return "Perfecto 💼 ¿Cuál es tu nombre completo?"
+        if state["last_action"] is None:   # <-- evita repetición
+           state["last_action"] = "save_name"
+           return "Perfecto 💼 ¿Cuál es tu nombre completo?"
+
 
     # Si está confirmando algo
     if state["confirming"]:
@@ -438,3 +441,4 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
