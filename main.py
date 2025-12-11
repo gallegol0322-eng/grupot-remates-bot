@@ -341,6 +341,12 @@ def handle_action(msg, state):
 def chatbot(msg, state):
     m = msg.lower().strip()
 
+    # Bloquear mensajes duplicados de ManyChat
+    if state.get("last_msg") == msg:
+       return None  # NO respondas si ya recibimos lo mismo
+    state["last_msg"] = msg
+
+
     # Reset de conversación
     if m in ["cancel", "cancelar", "cance", "cancela", "reset"]:
        state.update({
@@ -441,5 +447,6 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
