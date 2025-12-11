@@ -290,6 +290,34 @@ def process_confirmation(msg, state):
 # ==============================================
 def handle_action(msg, state):
 
+    # ===============================
+    #  INTELIGENCIA DE CORRECCIÓN DE RUTA
+    # ===============================
+
+    # 1. ¿El usuario escribió un nombre aunque no se lo estemos pidiendo?
+    nombre = extract_name(msg)
+    if nombre and nombre != state.get("name"):
+        state["name"] = nombre
+        state["last_action"] = "save_city"
+        state["confirming"] = "nombre"
+        return f"¿Tu nombre es {nombre}? (sí / no)"
+
+    # 2. ¿El mensaje contiene una ciudad?
+    ciudad = extract_city(msg)
+    if ciudad and ciudad != state.get("city"):
+        state["city"] = ciudad
+        state["last_action"] = "save_phone"
+        state["confirming"] = "ciudad"
+        return f"¿Tu ciudad es {ciudad}? (sí / no)"
+
+    # 3. ¿El usuario dio un teléfono aunque estemos en otra fase?
+    telefono = extract_phone(msg)
+    if telefono and telefono != state.get("phone"):
+        state["phone"] = telefono
+        state["confirming"] = "telefono"
+        return f"¿Tu teléfono es {telefono}? (sí / no)"
+
+
     if state["confirming"]:
         return process_confirmation(msg, state)
         
@@ -447,6 +475,7 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
