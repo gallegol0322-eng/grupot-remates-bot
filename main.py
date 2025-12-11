@@ -419,7 +419,7 @@ def chatbot(msg, state, trigger=None):
     # 10. Semántica
     sem = find_semantic(msg)
     if sem:
-        state["last_action"] = sem.get("next_action"])
+        state["last_action"] = sem.get("next_action")
         return sem["responses"][0]
 
     return "No logré entenderte 😅 prueba con otras palabras o escribe *asesor*."
@@ -454,4 +454,5 @@ def webhook():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
