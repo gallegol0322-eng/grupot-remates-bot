@@ -335,67 +335,80 @@ def handle_action(msg, state):
 def chatbot(msg, state):
     m = msg.lower().strip()
 
+    # ======================================================
+    #  CANCELAR
+    # ======================================================
     if "cancel" in m or "cancelar" in m:
         state.update({
-              "name":None,"city":None,"phone":None,
-              "modo":None,"last_action":None,"confirming":None
-              })
-        return "Proceso cancelado. Volvamos a empezar 😊\n¿Deseas aprender o invertir?"
+            "name": None,
+            "city": None,
+            "phone": None,
+            "modo": None,
+            "last_action": None,
+            "confirming": None
+        })
+        return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas aprender o invertir?"
 
+    # ======================================================
+    #  ACCESO DIRECTO A ASESOR
+    # ======================================================
     if "asesor" in m or "asesoria" in m:
         return "Contacto directo 👇 https://wa.me/573160422795"
 
+    # ======================================================
+    #  SI NO HAY MODO DEFINIDO TODAVÍA
+    # ======================================================
     if state["modo"] is None:
 
-    # Caso especial: quiere las dos opciones
+        # Caso: menciona ambas
         if "las dos" in m or "ambas" in m or ("aprender" in m and "invertir" in m):
-           state["modo"] = "invertir"          # Forzar modo invertir
-           state["last_action"] = "save_name"  # Empezar flujo normal
-           return (
-               "Perfecto 💼✨ Veo que quieres *aprender e invertir*.\n"
-               "Vamos a registrar tus datos para inversión.\n"
-               "¿Cuál es tu nombre completo?"
-            )
+            state["modo"] = "invertir"
+            state["last_action"] = "save_name"
+            return "Perfecto 💼✨ Vamos a registrar tus datos para inversión. ¿Cuál es tu nombre completo?"
 
+        # Caso: aprender
         if "aprender" in m:
-          state["modo"] = "aprender"; state["last_action"] = "save_name"
-          return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
+            state["modo"] = "aprender"
+            state["last_action"] = "save_name"
+            return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
 
+        # ‼️ Caso: quiere invertir aunque escriba más cosas
         if "invertir" in m:
-          state["modo"] = "invertir"; state["last_action"] = "save_name"
-          return "Excelente 💼 ¿Tu nombre completo?"
+            state["modo"] = "invertir"
+            state["last_action"] = "save_name"
+            return "Excelente 💼 ¿Cuál es tu nombre completo?"
 
-        return [
-          "En cualquier momento escribe la palabra \"asesor\" para hablar con un experto.",
-          "Ahora dime. ¿deseas *aprender* o *invertir*? 🤔"
-    ]
+        # NO RESPONDER LISTAS → responder texto plano
+        return "¿Deseas aprender o invertir? 🤔"
 
+    # ======================================================
+    #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
+    # ======================================================
+    if state["modo"] == "aprender":
+        return "Un asesor te contactará directamente para aprendizaje 😊"
 
+    # ======================================================
+    #  MODO INVERTIR — FLUJO ACTIVO
+    # ======================================================
+
+    # Confirmación pendiente
     if state["confirming"]:
         return process_confirmation(msg, state)
 
+    # Manejo de etapas (nombre, ciudad, teléfono)
     if state["last_action"]:
         forced = handle_action(msg, state)
-        if forced: 
+        if forced:
             return forced
 
-    cleaned = clean_text(msg)
-    intent = intent_model.predict(vectorizer.transform([cleaned]))[0]
-
-    for i in intents:
-        if i["tag"] == intent:
-            state["last_action"] = i.get("next_action")
-            r = i["responses"][0]
-            return (r.replace("{name}", state["name"] or "")
-                     .replace("{city}", state["city"] or "")
-                     .replace("{phone}", state["phone"] or ""))
-
-    sem = find_semantic(msg)
-    if sem:
-        state["last_action"]=sem.get("next_action")
-        return sem["responses"][0]
-
-    return "No logré entenderte 😅 prueba con otras palabras o escribe *asesor*."
+    # ======================================================
+    #  SI LLEGA AQUÍ Y SIGUE EN MODO INVERTIR → NO USAR INTENTS
+    #  EVITAMOS RESPUESTAS RARAS.
+    # ======================================================
+    return (
+        "Estamos avanzando con tu registro de inversión.\n"
+        "Por favor continúa donde íbamos o escribe tu nombre."
+    )
 
 
 # ==============================================
@@ -429,6 +442,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
