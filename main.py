@@ -343,13 +343,13 @@ def chatbot(msg, state):
 
     # Reset de conversación
     if m in ["cancel", "cancelar", "cance", "cancela", "reset"]:
-    state.update({
-        "name": None,
-        "city": None,
-        "phone": None,
-        "modo": None,
-        "last_action": None,
-        "confirming": None
+       state.update({
+         "name": None,
+         "city": None,
+         "phone": None,
+         "modo": None,
+         "last_action": None,
+         "confirming": None
     })
     return "Proceso cancelado. Empecemos de nuevo 😊 ¿Cuál es tu nombre?"
 
@@ -441,4 +441,5 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
