@@ -446,21 +446,34 @@ def webhook():
     data = request.get_json(force=True)
 
     uid = str(
-        data.get("user_id")
-        or data.get("sender_id")
-        or data.get("contact_id")
-        or data.get("profile_id")
-        or "anon"
+        data.get("user_id") or 
+        data.get("sender_id") or 
+        data.get("contact_id") or 
+        data.get("profile_id") or 
+        "anon"
     )
 
-    msg = data.get("message") or data.get("text") or data.get("comment") or ""
+    # ManyChat puede mandar triggers personalizados
+    trigger = data.get("trigger")
 
-    if not msg: 
+    # Activar flujo SOLO cuando ManyChat lo indique
+    if trigger == "start_invertir":
+        state = get_state(uid)
+        state.update({
+            "name": None,
+            "city": None,
+            "phone": None,
+            "modo": "invertir",
+            "last_action": "save_name",
+            "confirming": None
+        })
+        return jsonify({"respuesta": "Perfecto 💼 ¿Cuál es tu nombre completo?"})
+
+    # Si no hay trigger, seguimos flujo normal
+    msg = data.get("message") or data.get("text") or data.get("comment") or ""
+    if not msg:
         phone_field = data.get("phone")
-        if phone_field:
-            msg = str(phone_field)
-        else:
-            msg = ""
+        msg = str(phone_field) if phone_field else ""
 
     state = get_state(uid)
     respuesta = chatbot(msg, state)
@@ -468,13 +481,9 @@ def webhook():
     return jsonify({"respuesta": respuesta}), 200
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return {"status": "online"}, 200
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
 
