@@ -16,15 +16,17 @@ app = Flask(__name__)
 user_states = {}
 
 def get_state(uid):
-    if uid not in user_states:
-        user_states[uid] = {
-            "name": None,
-            "city": None,
-            "phone": None,
-            "modo": None,
-            "last_action": None,
-            "confirming": None
-        }
+   def reset_state(state):
+      state.clear()
+      state.update({
+        "name": None,
+        "city": None,
+        "phone": None,
+        "modo": None,
+        "last_action": None,
+        "confirming": None
+    })
+
     return user_states[uid]
 
 
@@ -243,19 +245,25 @@ def process_confirmation(msg, state):
 
 
         if field == "telefono":
-            # Guardar en Google Sheets
-            try:
-                guardar_en_google_sheets(
-                    modo=state["modo"],
-                    name=state["name"],
-                    city=state["city"],
-                    phone=state["phone"]
-                )
-            except:
-                pass
+           try:
+               guardar_en_google_sheets(
+                   modo=state["modo"],
+                   name=state["name"],
+                   city=state["city"],
+                   phone=state["phone"]
+               )
+           except:
+               pass
 
-            state["last_action"] = None
-            return "Perfecto ✔️ Registro guardado.\nUn asesor te contactará pronto 💌"
+           reset_state(state)  # 🔥 AQUÍ SE REINICIA TODO
+
+           return (
+                  "Perfecto ✔️ Registro guardado.\n"
+                  "Un asesor te contactará pronto 💌\n\n"
+                  "Si deseas iniciar de nuevo, escribe *hola*."
+            )
+
+
 
         return "Listo."
         
@@ -442,6 +450,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
