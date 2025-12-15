@@ -15,10 +15,9 @@ app = Flask(__name__)
 # ==============================================
 user_states = {}
 
-def get_state(uid):
-   def reset_state(state):
-      state.clear()
-      state.update({
+def reset_state(state):
+    state.clear()
+    state.update({
         "name": None,
         "city": None,
         "phone": None,
@@ -27,6 +26,16 @@ def get_state(uid):
         "confirming": None
     })
 
+def get_state(uid):
+    if uid not in user_states:
+        user_states[uid] = {
+            "name": None,
+            "city": None,
+            "phone": None,
+            "modo": None,
+            "last_action": None,
+            "confirming": None
+        }
     return user_states[uid]
 
 
@@ -450,6 +459,7 @@ def home():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000)
+
 
 
 
