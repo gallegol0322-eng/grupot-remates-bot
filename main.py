@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
 import json
-import torch
 import joblib
 import re
 from clean_text import clean_text
-from sentence_transformers import SentenceTransformer
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
 
 
@@ -204,9 +202,6 @@ def extract_phone(text):
 # ==============================================
 intent_model = joblib.load("models/intent_model.joblib")
 vectorizer = joblib.load("models/intent_vectorizer.joblib")
-
-emb = torch.load("semantic_embeddings.pt")
-model_sem = SentenceTransformer("all-MiniLM-L6-v2")
 
 with open("intents_v2.json","r",encoding="utf-8") as f:
     intents = json.load(f)["intents"]
@@ -458,6 +453,7 @@ def home():
 
 if __name__ == "__main__":
     pass
+
 
 
 
