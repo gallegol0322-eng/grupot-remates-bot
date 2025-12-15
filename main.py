@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 import json
 import joblib
@@ -263,7 +264,6 @@ def process_confirmation(msg, state):
            return (
                   "Perfecto ✔️ Registro guardado.\n"
                   "Un asesor te contactará pronto 💌\n\n"
-                  "Si deseas iniciar de nuevo, escribe *hola*."
             )
 
 
@@ -452,26 +452,5 @@ def home():
 
 
 if __name__ == "__main__":
-    pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
