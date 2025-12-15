@@ -38,7 +38,6 @@ def get_state(uid):
         }
     return user_states[uid]
 
-
 # ==============================================
 #  📌  EXTRACCIÓN DE DATOS DEL USUARIO
 # ==============================================
@@ -459,6 +458,7 @@ def home():
 
 if __name__ == "__main__":
     pass
+
 
 
 
