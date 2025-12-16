@@ -375,7 +375,7 @@ def chatbot(msg, state):
         if "las dos" in m or "ambas" in m or ("aprender" in m and "invertir" in m):
             state["modo"] = "invertir"
             state["last_action"] = "save_name"
-            return "Perfecto 💼✨ Vamos a registrar tus datos para inversión. ¿Cuál es tu nombre completo?"
+            return "Perfecto 💼✨ vamos a registrar tus datos para que te comuniques con uno de nuestros asesores. ¿Cuál es tu nombre completo?"
 
         # Caso: aprender
         if "aprender" in m:
@@ -387,7 +387,7 @@ def chatbot(msg, state):
         if "invertir" in m:
             state["modo"] = "invertir"
             state["last_action"] = "save_name"
-            return "Excelente 💼 ¿Cuál es tu nombre completo?"
+            return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
         # NO RESPONDER LISTAS → responder texto plano
         return (
@@ -459,4 +459,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
