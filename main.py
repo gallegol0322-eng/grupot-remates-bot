@@ -390,7 +390,12 @@ def chatbot(msg, state):
             return "Excelente 💼 ¿Cuál es tu nombre completo?"
 
         # NO RESPONDER LISTAS → responder texto plano
-        return "¿Deseas aprender o invertir? 🤔"
+        return (
+            "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+            "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
+            "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔\n"
+        )
+        
 
     # ======================================================
     #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
@@ -454,3 +459,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
