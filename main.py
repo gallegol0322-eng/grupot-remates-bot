@@ -329,15 +329,16 @@ def handle_action(msg, state):
              return f"¿Tu teléfono es {p}? (sí / no)"
 
     # Si no entendí el número → pedir de nuevo
+            name = state.get("name", "Amigo")
         return (
-          "No logro leer tu número 📵\n"
-          "Escríbelo usando *guiones, espacios o puntos*, por ej:\n\n"
-          "📌 314 523 2968\n"
-          "📌 314-523-2968\n"
-          "📌 314.523.2968\n"
-          "📌 +57 314 523 2968\n"
-    )
-    return None
+                f"😕 No logro leer correctamente tu número, {name}.\n\n"
+                "📱 Para continuar, por favor envíame **tu número de teléfono junto a tu primer nombre**, "
+                "todo en un solo mensaje.\n\n"
+                "✍️ **Ejemplo:**\n"
+                f"👉 {name} 3141234567\n\n"
+                "⚠️ Escríbelo **sin guiones, puntos ni espacios adicionales**.\n"
+                "¡Gracias! 😊"
+        )
 
 
 # ==============================================
@@ -459,5 +460,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
