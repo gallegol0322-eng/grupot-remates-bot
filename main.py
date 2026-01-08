@@ -223,7 +223,7 @@ def confirm_value(field, value, state):
     state["confirming"] = field
     return f"¿Tu {field} es {value}? (sí / no)"
 
-def process_confirmation(msg, state):
+def process_confirmation(msg, state, uid):
     msg = msg.lower().strip()
     field = state.get("confirming")
 
@@ -293,10 +293,10 @@ def process_confirmation(msg, state):
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
 # ==============================================
-def handle_action(msg, state):
+def handle_action(msg, state, uid):
 
     if state["confirming"]:
-        return process_confirmation(msg, state)
+        return process_confirmation(msg, state, uid)
         
     if state["last_action"]=="save_name":
         n=extract_name(msg)
@@ -343,7 +343,7 @@ def handle_action(msg, state):
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
 # ==============================================
-def chatbot(msg, state):
+def chatbot(msg, state, uid):
     m = msg.lower().strip()
 
     # ======================================================
@@ -409,11 +409,11 @@ def chatbot(msg, state):
 
     # Confirmación pendiente
     if state["confirming"]:
-        return process_confirmation(msg, state)
+        return process_confirmation(msg, state, uid)
 
     # Manejo de etapas (nombre, ciudad, teléfono)
     if state["last_action"]:
-        forced = handle_action(msg, state)
+        forced = handle_action(msg, state, uid)
         if forced:
             return forced
 
@@ -447,7 +447,7 @@ def webhook():
             msg = ""
 
     state=get_state(uid)
-    respuesta=chatbot(msg,state)
+    respuesta=chatbot(msg,state, uid)
 
     return jsonify({"respuesta":respuesta}),200
 
@@ -459,6 +459,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
