@@ -5,6 +5,31 @@ import joblib
 import re
 from clean_text import clean_text
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
+import requests
+
+
+GHL_WEBHOOK_URL = os.getenv("GHL_WEBHOOK_URL")
+
+def enviar_a_ghl(state, uid):
+    if not GHL_WEBHOOK_URL:
+        print("❌ GHL_WEBHOOK_URL no configurada")
+        return
+
+    payload = {
+        "external_user_id": uid,
+        "name": state.get("name"),
+        "phone": state.get("phone"),
+        "city": state.get("city"),
+        "modo": state.get("modo"),
+        "estado_lead": "listo_para_invertir",
+        "source": "instagram_bot"
+    }
+
+    try:
+        r = requests.post(GHL_WEBHOOK_URL, json=payload, timeout=10)
+        print("✅ Enviado a GHL:", r.status_code)
+    except Exception as e:
+        print("❌ Error enviando a GHL:", e)
 
 
 app = Flask(__name__)
@@ -259,7 +284,10 @@ def process_confirmation(msg, state, uid):
            except:
                pass
 
-           reset_state(state)  # 🔥 AQUÍ SE REINICIA TODO
+           if state["modo"] == "invertir":
+                 enviar_a_ghl(state, uid)
+
+           reset_state(state)
 
            return (
                   "Perfecto ✔️ Registro guardado.\n"
@@ -327,10 +355,11 @@ def handle_action(msg, state, uid):
              state["phone"] = p
              state["confirming"] = "telefono"
              return f"¿Tu teléfono es {p}? (sí / no)"
-
+            
+nombre = state.get("name", "")
     # Si no entendí el número → pedir de nuevo
         return (
-                f"😕 No logro leer correctamente tu número, {name}.\n\n"
+                f"😕 No logro leer correctamente tu número, {nombre}.\n\n"
                 "📱 Para continuar, por favor envíame **tu número de teléfono junto a tu primer nombre**, "
                 "todo en un solo mensaje.\n\n"
                 "✍️ **Ejemplo:**\n"
