@@ -356,7 +356,6 @@ def handle_action(msg, state, uid):
              state["confirming"] = "telefono"
              return f"¿Tu teléfono es {p}? (sí / no)"
             
-nombre = state.get("name", "")
     # Si no entendí el número → pedir de nuevo
         return (
                 f"😕 No logro leer correctamente tu número, {name}.\n\n"
@@ -488,6 +487,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
