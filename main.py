@@ -322,6 +322,8 @@ def process_confirmation(msg, state, uid):
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
 # ==============================================
 def handle_action(msg, state, uid):
+    nombre = state.get("name") or ""
+
 
     if state["confirming"]:
         return process_confirmation(msg, state, uid)
@@ -358,11 +360,11 @@ def handle_action(msg, state, uid):
             
     # Si no entendí el número → pedir de nuevo
         return (
-                f"😕 No logro leer correctamente tu número, {name}.\n\n"
+                f"😕 No logro leer correctamente tu número, {nombre}.\n\n"
                 "📱 Para continuar, por favor envíame **tu número de teléfono junto a tu primer nombre**, "
                 "todo en un solo mensaje.\n\n"
                 "✍️ **Ejemplo:**\n"
-                f"👉 {name} 3141234567\n\n"
+                f"👉 {nombre} 3141234567\n\n"
                 "⚠️ Escríbelo **sin guiones, puntos ni espacios adicionales**.\n"
                 "¡Gracias! 😊"
         )
@@ -487,6 +489,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
