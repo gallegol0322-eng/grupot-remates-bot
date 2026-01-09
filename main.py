@@ -374,7 +374,17 @@ def handle_action(msg, state, uid):
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
 # ==============================================
 def chatbot(msg, state, uid):
+
+    # 🔒 BLINDAJE TOTAL PARA GHL / IG / MANYCHAT
+    if not isinstance(msg, str):
+        msg = ""
+
     m = msg.lower().strip()
+
+    # Si llega vacío, responder algo base
+    if not m:
+        return "👋 Hola, cuéntame ¿deseas aprender o invertir?"
+
 
     # ======================================================
     #  CANCELAR
@@ -495,14 +505,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
-
-
-
-
-
