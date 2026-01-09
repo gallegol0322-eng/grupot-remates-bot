@@ -472,7 +472,7 @@ def chatbot(msg, state, uid):
 # ==============================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    data = request.get_json(force=True)
+    data = request.get_json(force=True) or {}
 
     uid = str(
         data.get("user_id")
@@ -484,16 +484,20 @@ def webhook():
 
     raw_msg = data.get("message") or data.get("text") or data.get("comment") or ""
 
-    # 🔥 FIX GHL
+    # Blindaje total
     if isinstance(raw_msg, dict):
-        msg = raw_msg.get("body", "")
+        msg = raw_msg.get("body") or raw_msg.get("text") or ""
     else:
-        msg = raw_msg
+        msg = str(raw_msg)
 
     state = get_state(uid)
     respuesta = chatbot(msg, state, uid)
 
-    return jsonify({"respuesta": respuesta}), 200
+    # 👇 CLAVE PARA GOHIGHLEVEL
+    return jsonify({
+        "success": True,
+        "respuesta": respuesta
+    }), 200
 
 
 
@@ -505,3 +509,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
