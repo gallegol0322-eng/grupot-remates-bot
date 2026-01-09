@@ -472,26 +472,19 @@ def webhook():
         or "anon"
     )
 
-    raw_message = data.get("message")
+    raw_msg = data.get("message") or data.get("text") or data.get("comment") or ""
 
-    if isinstance(raw_message, dict):
-        msg = raw_message.get("body", "")
-    elif isinstance(raw_message, str):
-        msg = raw_message
+    # 🔥 FIX GHL
+    if isinstance(raw_msg, dict):
+        msg = raw_msg.get("body", "")
     else:
-        msg = (
-            data.get("text")
-            or data.get("comment")
-            or data.get("phone")
-            or ""
-        )
-
-    msg = str(msg).strip()
+        msg = raw_msg
 
     state = get_state(uid)
     respuesta = chatbot(msg, state, uid)
 
     return jsonify({"respuesta": respuesta}), 200
+
 
 
 @app.route("/",methods=["GET"])
@@ -502,6 +495,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
