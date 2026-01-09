@@ -467,14 +467,28 @@ def webhook():
     uid=str(data.get("user_id") or data.get("sender_id") or 
             data.get("contact_id") or data.get("profile_id") or "anon")
 
-    msg=data.get("message") or data.get("text") or data.get("comment") or ""
+    msg = data.get("message") or data.get("text") or data.get("comment") or ""
 
-    if not msg: 
-        phone_field = data.get("phone")
-        if phone_field:
+# 🔧 FIX PARA GOHIGHLEVEL (message puede ser dict)
+    if isinstance(msg, dict):
+        msg = (
+           msg.get("body")
+           or msg.get("text")
+           or ""
+        )
+
+# fallback por si viene algo raro
+    if not isinstance(msg, str):
+         msg = str(msg)
+
+# fallback teléfono
+    if not msg:
+         phone_field = data.get("phone")
+         if phone_field:
             msg = str(phone_field)
-        else:
-            msg = ""
+         else:
+              msg = ""
+
 
     state=get_state(uid)
     respuesta=chatbot(msg,state, uid)
@@ -489,6 +503,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
