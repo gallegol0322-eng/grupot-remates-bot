@@ -71,8 +71,15 @@ def extract_name(text):
         return None
 
     # Normalización inicial
-    text = text.lower().strip()
+    text = text.lower().strip()   
     text = re.sub(r"[^a-záéíóúñ ]", "", text)
+
+    invalid = [
+        "invertir","aprender","si","no","ok","vale","listo","claro","gracias"
+    ]
+
+    if text in invalid:
+        return None
 
     # Buscar expresiones comunes
     match = re.search(r"(me llamo|mi nombre es|soy)\s+(.*)", text)
@@ -203,22 +210,17 @@ def extract_phone(text):
     phone = re.sub(r"\D", "", text)
     if not phone:
         return None
-        
-    # quitar prefijo +57 o 57
-    if phone.startswith("57"):
-        phone = phone[2:]
 
-    # si comienza con 3 y tiene 10 dígitos (cel colombiano)
+    if phone.startswith("57") and len(phone) == 12:
+                 return "+57" + phone[2:]
+
+    # Caso 2: viene solo el número colombiano (10 dígitos)
     if len(phone) == 10 and phone.startswith("3"):
-        return phone
+                 return "+57" + phone
 
-    # si tiene 7 dígitos (línea fija)
-    if len(phone) == 7:
-        return phone
-
-    # aceptar números largos internacionales 7 a 15
+     # Caso 3: número internacional (7 a 15 dígitos)
     if 7 <= len(phone) <= 15:
-        return phone
+                 return "+" + phone
 
     return None
 
@@ -270,8 +272,11 @@ def process_confirmation(msg, state, uid):
 
         if field == "ciudad":
            state["last_action"] = "save_phone"
-           return f"{state['name']} regalame porfavor tu numero de telefono seguido de tu primer nombre. Ejemplo: (Juan 3141234567)"
-
+           return (
+            f"{state['name']} 📱 regálame tu número de WhatsApp.\n"
+            "Ejemplos:\n"
+            "3053662888 o +573053662888"
+           )
 
         if field == "telefono":
            try:
@@ -328,6 +333,9 @@ def handle_action(msg, state, uid):
     if state["confirming"]:
         return process_confirmation(msg, state, uid)
         
+    # ==========================
+    # ----- Guardar nombre -----
+    # ==========================
     if state["last_action"]=="save_name":
         n=extract_name(msg)
         
@@ -336,8 +344,13 @@ def handle_action(msg, state, uid):
             state["confirming"] = "nombre"
             return f"¿Tu nombre es {n}? (sí / no)"
             
-        return "No entendí tu nombre 🙈"
+        return (
+            "No entendí tu nombre 🤔 Escríbelo nuevamente, por favor."
+        )
 
+    # ==========================
+    # ..... Guardar ciudad .....
+    # ==========================
     if state["last_action"]=="save_city":
         c=extract_city(msg)
         
@@ -348,26 +361,35 @@ def handle_action(msg, state, uid):
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
-
-    if state["last_action"]=="save_phone":
+    # ==========================
+    # ---- GUARDAR TELEFONO -----
+    # ========================== 
+    if state["last_action"] == "save_phone":
         p = extract_phone(msg)
 
-    # Si pude leer el número → confirmar
         if p:
+            state["phone"] = p
+            state["confirming"] = "telefono"
+            return f"¿Tu teléfono es {p}? (sí / no)"
+
+        return (
+            f"{state['name']} 📱 escríbeme tu número de WhatsApp.\n"
+            "Ejemplos:\n"
+            "3053662888\n"
+            "+573053662888"
+        )
+
+    return None
+
+
+    # Si pude leer el número → confirmar
+    if p:
              state["phone"] = p
              state["confirming"] = "telefono"
              return f"¿Tu teléfono es {p}? (sí / no)"
+        
             
-    # Si no entendí el número → pedir de nuevo
-        return (
-                f"😕 No logro leer correctamente tu número, {nombre}.\n\n"
-                "📱 Para continuar, por favor envíame **tu número de teléfono junto a tu primer nombre**, "
-                "todo en un solo mensaje.\n\n"
-                "✍️ **Ejemplo:**\n"
-                f"👉 {nombre} 3141234567\n\n"
-                "⚠️ Escríbelo **sin guiones, puntos ni espacios adicionales**.\n"
-                "¡Gracias! 😊"
-        )
+
 
 
 # ==============================================
@@ -509,4 +531,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
