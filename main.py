@@ -212,15 +212,15 @@ def extract_phone(text):
         return None
 
     if phone.startswith("57") and len(phone) == 12:
-                 return "+57" + phone[2:]
+        return "+57" + phone[2:]
 
     # Caso 2: viene solo el número colombiano (10 dígitos)
     if len(phone) == 10 and phone.startswith("3"):
-                 return "+57" + phone
+        return "+57" + phone
 
      # Caso 3: número internacional (7 a 15 dígitos)
     if 7 <= len(phone) <= 15:
-                 return "+" + phone
+        return "+" + phone
 
     return None
 
@@ -381,17 +381,6 @@ def handle_action(msg, state, uid):
 
     return None
 
-
-    # Si pude leer el número → confirmar
-    if p:
-             state["phone"] = p
-             state["confirming"] = "telefono"
-             return f"¿Tu teléfono es {p}? (sí / no)"
-        
-            
-
-
-
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
 # ==============================================
@@ -531,5 +520,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
