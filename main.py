@@ -375,9 +375,7 @@ def handle_action(msg, state, uid):
             state["city"]=c
             state["confirming"] = "ciudad"
             return (
-                  f"Genial 🙌 entonces estás en *{c}*.\n"
-                  "Si es correcto, confirma con *si*.\n"
-                  "Si no, confirmame con *no* ✍️"
+                  f"Genial 🙌 entonces estás en *{c}*. Confirmame con (si/no) ✍️"
                    )
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
@@ -399,8 +397,7 @@ def handle_action(msg, state, uid):
 
         return (
             f"{state['name']} 📱 escríbeme tu número de WhatsApp.\n"
-            "Ejemplo:\n"
-            "3053662888\n"
+            "Ejemplo: 3053662888\n"
         )
 
     return None
@@ -542,6 +539,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
