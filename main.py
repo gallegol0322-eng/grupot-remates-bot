@@ -357,7 +357,7 @@ def handle_action(msg, state, uid):
         
         if n: 
             state["name"]=n 
-            state["confirming"] = "nombre"
+            state["last_action"] = "save_city"
             return f"Perfecto {n} 😊 ¿De qué ciudad nos escribes?"
             
         return (
@@ -539,6 +539,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
