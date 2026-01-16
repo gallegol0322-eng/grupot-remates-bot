@@ -448,32 +448,41 @@ def chatbot(msg, state, uid):
     # ======================================================
     if state["modo"] is None:
 
-         if not state.get("welcomed"):
-             state["welcomed"] = True
-             return (
-                "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-                "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
-                "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔"
-             )
+    # 1️⃣ Detectar intención PRIMERO
+    if contains_word(m, "invertir"):
+        state["modo"] = "invertir"
+        state["last_action"] = "save_name"
+        return (
+            "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.\n"
+            "¿Cuál es tu nombre completo? ✨"
+        )
 
-        # Caso: menciona ambas
-    
-          if contains_word(m, "invertir"):
-              state["modo"] = "invertir"
-              state["last_action"] = "save_name"
-              return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
+    if contains_word(m, "aprender"):
+        state["modo"] = "aprender"
+        state["last_action"] = "save_name"
+        return (
+            "Excelente 📘 vamos a registrar tus datos.\n"
+            "¿Cuál es tu nombre completo? ✨"
+        )
 
-          if contains_word(m, "aprender"):
-              state["modo"] = "aprender"
-              state["last_action"] = "save_name"
-              return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
+    if "las dos" in m or "ambas" in m:
+        state["modo"] = "invertir"
+        state["last_action"] = "save_name"
+        return (
+            "Perfecto 💼✨ vamos a registrar tus datos.\n"
+            "¿Cuál es tu nombre completo?"
+        )
 
-         if "las dos" in m or "ambas" in m:
-              state["modo"] = "invertir"
-              state["last_action"] = "save_name"
-              return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
+    # 2️⃣ Saludo SOLO si no escribió ninguna intención
+    if not state.get("welcomed"):
+        state["welcomed"] = True
+        return (
+            "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+            "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
+            "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔"
+        )
 
-         return None
+    return None
 
     # ======================================================
     #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
@@ -547,6 +556,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
