@@ -274,8 +274,8 @@ def process_confirmation(msg, state, uid):
            state["last_action"] = "save_phone"
            return (
             f"{state['name']} 📱 regálame tu número de WhatsApp.\n"
-            "Ejemplos:\n"
-            "3053662888 o +573053662888"
+            "Ejemplo:\n"
+            "3053662888"
            )
 
         if field == "telefono":
@@ -387,9 +387,7 @@ def handle_action(msg, state, uid):
 def chatbot(msg, state, uid):
 
     # 🔒 BLINDAJE TOTAL PARA GHL / IG / MANYCHAT
-    if not isinstance(msg, str):
-        msg = ""
-
+    
     m = msg.lower().strip()
 
     # ======================================================
@@ -514,6 +512,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
