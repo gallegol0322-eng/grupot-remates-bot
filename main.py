@@ -358,7 +358,7 @@ def handle_action(msg, state, uid):
         if n: 
             state["name"]=n 
             state["confirming"] = "nombre"
-            return f"¿Tu nombre es {n}? (sí / no)"
+            return f"Perfecto {n} 😊 ¿De qué ciudad nos escribes?"
             
         return (
             "No entendí tu nombre 🤔 Escríbelo nuevamente, por favor."
@@ -373,7 +373,7 @@ def handle_action(msg, state, uid):
         if c: 
             state["city"]=c
             state["confirming"] = "ciudad"
-            return (f"¿Tu ciudad es {c}? (sí / no)"
+            return (
                   f"Genial 🙌 entonces estás en *{c}*.\n"
                   "Si es correcto, confirma con *si*.\n"
                   "Si no, confirmame con *no* ✍️"
@@ -391,9 +391,8 @@ def handle_action(msg, state, uid):
             state["phone"] = p
             state["confirming"] = "telefono"
             return (
-                  f"Perfecto {n}, tu número es?: *{p}*.\n"
-                  "Si está bien, confirma con *si*.\n"
-                  "Si no, confirmame con *no* ✍️"
+                   f"Perfecto {state['name']}, ¿este es tu número? {p}"
+
             )
 
 
@@ -540,6 +539,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
