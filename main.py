@@ -452,23 +452,23 @@ def chatbot(msg, state, uid):
              )
 
         # Caso: menciona ambas
-        if "las dos" in m or "ambas" in m:
+         if "las dos" in m or "ambas" in m:
               state["modo"] = "invertir"
               state["last_action"] = "save_name"
               return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
-        if m.strip() == "aprender":
+         if m.strip() == "aprender":
               state["modo"] = "aprender"
               state["last_action"] = "save_name"
               return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
-        if m.strip() == "invertir":
+         if m.strip() == "invertir":
               state["modo"] = "invertir"
               state["last_action"] = "save_name"
               return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
 
-        return None
+         return None
 
     # ======================================================
     #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
@@ -542,6 +542,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
