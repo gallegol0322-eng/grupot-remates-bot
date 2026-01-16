@@ -449,10 +449,10 @@ def chatbot(msg, state, uid):
     # ======================================================
 #  SI NO HAY MODO DEFINIDO TODAVÍA
 # ======================================================
-if state["modo"] is None:
+    if state["modo"] is None:
 
     # 1️⃣ Detectar intención PRIMERO (aunque venga con más texto)
-    if contains_word(m, "invertir"):
+      if contains_word(m, "invertir"):
         state["modo"] = "invertir"
         state["last_action"] = "save_name"
         return (
@@ -460,7 +460,7 @@ if state["modo"] is None:
             "¿Cuál es tu nombre completo? ✨\n"
         )
 
-    if contains_word(m, "aprender"):
+      if contains_word(m, "aprender"):
         state["modo"] = "aprender"
         state["last_action"] = "save_name"
         return (
@@ -468,7 +468,7 @@ if state["modo"] is None:
             "¿Cuál es tu nombre completo? ✨\n"
         )
 
-    if "las dos" in m or "ambas" in m:
+      if "las dos" in m or "ambas" in m:
         state["modo"] = "invertir"
         state["last_action"] = "save_name"
         return (
@@ -477,7 +477,7 @@ if state["modo"] is None:
         )
 
     # 2️⃣ Saludo SOLO si NO escribió intención
-    if not state.get("welcomed"):
+      if not state.get("welcomed"):
         state["welcomed"] = True
         return (
             "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
@@ -561,6 +561,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
