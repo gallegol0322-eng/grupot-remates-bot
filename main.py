@@ -59,7 +59,8 @@ def get_state(uid):
             "modo": None,
             "last_action": None,
             "confirming": None,
-            "completed": False
+            "completed": False,
+            "welcomed": False
         }
     return user_states[uid]
 
@@ -442,30 +443,32 @@ def chatbot(msg, state, uid):
     # ======================================================
     if state["modo"] is None:
 
+         if not state.get("welcomed"):
+             state["welcomed"] = True
+             return (
+                "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+                "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
+                "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔"
+             )
+
         # Caso: menciona ambas
         if "las dos" in m or "ambas" in m:
-          state["modo"] = "invertir"
-          state["last_action"] = "save_name"
-          return "Perfecto 💼✨ ¿Cuál es tu nombre completo?"
+              state["modo"] = "invertir"
+              state["last_action"] = "save_name"
+              return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
         if m.strip() == "aprender":
-          state["modo"] = "aprender"
-          state["last_action"] = "save_name"
-          return "Perfecto 🤓 ¿Cuál es tu nombre completo?"
+              state["modo"] = "aprender"
+              state["last_action"] = "save_name"
+              return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
         if m.strip() == "invertir":
-          state["modo"] = "invertir"
-          state["last_action"] = "save_name"
-          return "Excelente 💼 ¿Cuál es tu nombre completo?"
+              state["modo"] = "invertir"
+              state["last_action"] = "save_name"
+              return "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores ¿Cuál es tu nombre completo?✨"
 
 
-        # NO RESPONDER LISTAS → responder texto plano
-        return (
-            "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-            "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
-            "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔\n"
-        )
-        
+        return None
 
     # ======================================================
     #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
@@ -539,6 +542,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
