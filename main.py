@@ -457,7 +457,7 @@ if state["modo"] is None:
         state["last_action"] = "save_name"
         return (
             "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.\n"
-            "¿Cuál es tu nombre completo? ✨"
+            "¿Cuál es tu nombre completo? ✨\n"
         )
 
     if contains_word(m, "aprender"):
@@ -465,7 +465,7 @@ if state["modo"] is None:
         state["last_action"] = "save_name"
         return (
             "Excelente 📘 vamos a registrar tus datos.\n"
-            "¿Cuál es tu nombre completo? ✨"
+            "¿Cuál es tu nombre completo? ✨\n"
         )
 
     if "las dos" in m or "ambas" in m:
@@ -473,7 +473,7 @@ if state["modo"] is None:
         state["last_action"] = "save_name"
         return (
             "Perfecto 💼✨ vamos a registrar tus datos.\n"
-            "¿Cuál es tu nombre completo?"
+            "¿Cuál es tu nombre completo?\n"
         )
 
     # 2️⃣ Saludo SOLO si NO escribió intención
@@ -482,7 +482,7 @@ if state["modo"] is None:
         return (
             "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
             "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
-            "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔"
+            "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔\n"
         )
 
     # 3️⃣ Si ya saludó y no dijo intención, no responder nada
@@ -561,6 +561,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
