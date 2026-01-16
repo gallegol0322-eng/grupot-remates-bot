@@ -58,7 +58,8 @@ def get_state(uid):
             "phone": None,
             "modo": None,
             "last_action": None,
-            "confirming": None
+            "confirming": None,
+            "completed": False
         }
     return user_states[uid]
 
@@ -258,7 +259,7 @@ def process_confirmation(msg, state, uid):
         return "No entendí, repite por favor."
 
     # Respuestas afirmativas
-    afirm = ["si","sí","claro","correcto","ok","sisas","s"]
+    afirm = ["si","sí","claro","correcto","ok","sisas","s","dale","perfecto","todo bien","así está bien"]
 
     # Respuesta negativa
     neg = ["no","nop","nel","nope","ño","n"]
@@ -292,7 +293,19 @@ def process_confirmation(msg, state, uid):
            if state["modo"] == "invertir":
                  enviar_a_ghl(state, uid)
 
-           reset_state(state)
+           state.update({
+                "name": None,
+                "city": None,
+                "phone": None,
+                "modo": None,
+                "last_action": None,
+                "confirming": None,
+                "completed": True
+            })
+
+
+            
+
 
            return (
                   "Perfecto ✔️ Registro guardado.\n"
@@ -320,8 +333,11 @@ def process_confirmation(msg, state, uid):
 
         return f"Ok, repíteme tu {field}."
 
-    # si responde algo raro
-    return "¿Sí o no?"
+    # si responde algo raro #
+    
+    
+    
+    
   
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
@@ -357,7 +373,11 @@ def handle_action(msg, state, uid):
         if c: 
             state["city"]=c
             state["confirming"] = "ciudad"
-            return f"¿Tu ciudad es {c}? (sí / no)"
+            return (f"¿Tu ciudad es {c}? (sí / no)"
+                  f"Genial 🙌 entonces estás en *{c}*.\n"
+                  "Si es correcto, confirma con *si*.\n"
+                  "Si no, confirmame con *no* ✍️"
+                   )
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
@@ -370,13 +390,17 @@ def handle_action(msg, state, uid):
         if p:
             state["phone"] = p
             state["confirming"] = "telefono"
-            return f"¿Tu teléfono es {p}? (sí / no)"
+            return (
+                  f"Perfecto {n}, tu número es?: *{p}*.\n"
+                  "Si está bien, confirma con *si*.\n"
+                  "Si no, confirmame con *no* ✍️"
+            )
+
 
         return (
             f"{state['name']} 📱 escríbeme tu número de WhatsApp.\n"
-            "Ejemplos:\n"
+            "Ejemplo:\n"
             "3053662888\n"
-            "+573053662888"
         )
 
     return None
@@ -385,8 +409,12 @@ def handle_action(msg, state, uid):
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
 # ==============================================
 def chatbot(msg, state, uid):
+# ======================================================
+#  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
+# ======================================================
+    if state.get("completed"):
+        return ""
 
-    # 🔒 BLINDAJE TOTAL PARA GHL / IG / MANYCHAT
     
     m = msg.lower().strip()
 
@@ -512,6 +540,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
