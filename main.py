@@ -423,13 +423,15 @@ def chatbot(msg, state, uid):
     if state.get("completed"):
         return ""
 
-    if state["last_action"] or state["confirming"]:
-        forced = hadle_action(msg, state, uid)
+    if state.get("modo") and (state["last_action"] or state["confirming"]):
+        forced = handle_action(msg, state, uid)
         if forced: 
-            return (
-             "Seguimos con tu registro 😊\n"
-             "Por favor responde al mensaje anterior."
-    )
+            return forced
+        return (
+            "Seguimos con tu registro 😊\n"
+            "Por favor responde al mensaje anterior."
+        )
+            
 
     
     m = msg.lower().strip()
@@ -567,4 +569,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
