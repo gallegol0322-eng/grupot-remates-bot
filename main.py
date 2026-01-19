@@ -38,7 +38,7 @@ def enviar_a_ghl(state, uid):
         "phone": state.get("phone"),
         "city": state.get("city"),
         "modo": state.get("modo"),
-        "estado_lead": "listo_para_invertir",
+        "estado_lead": f"listo_para_{state.get('modo')}",
         "source": "instagram_bot"
     }
 
@@ -549,6 +549,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
