@@ -386,7 +386,7 @@ def handle_action(msg, state, uid):
             state["city"]=c
             state["confirming"] = "ciudad"
             return (
-                  f"Genial 🙌 entonces estás en *{c}*. Confirmame con (si/no) ✍️"
+                  f"Genial 🙌 entonces estás en {c}. Confirmame con (si/no) ✍️"
                    )
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
@@ -422,6 +422,14 @@ def chatbot(msg, state, uid):
 # ======================================================
     if state.get("completed"):
         return ""
+
+    if state["last_action"] or state["confirming"]:
+        forced = hadle_action(msg, state, uid)
+        if forced: 
+            return (
+             "Seguimos con tu registro 😊\n"
+             "Por favor responde al mensaje anterior."
+    )
 
     
     m = msg.lower().strip()
@@ -464,13 +472,13 @@ def chatbot(msg, state, uid):
 
       if contains_any(m, APRENDER_KEYWORDS):
         state["modo"] = "mentoria"
-        state["completed"] = True
         enviar_a_ghl(state, uid)
+        state["completed"] = True
+      
         return (
             "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
         )
 
-    # 👇 RESPUESTA POR DEFECTO (CLAVE)
       if not state.get("welcomed"):
             state["welcomed"] = True
             return (
@@ -530,7 +538,13 @@ def webhook():
 
     # Blindaje total
     if isinstance(raw_msg, dict):
-        msg = raw_msg.get("body") or raw_msg.get("text") or ""
+    # 🔥 CASO TELÉFONO DE INSTAGRAM
+       msg = (
+        raw_msg.get("body")
+        or raw_msg.get("text")
+        or raw_msg.get("phone_number")
+        or ""
+    )
     else:
         msg = str(raw_msg)
 
@@ -553,9 +567,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
