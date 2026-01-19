@@ -7,6 +7,18 @@ from clean_text import clean_text
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
 import requests
 
+def contains_any(text: str, words: list) -> bool:
+    text = (text or "").lower()
+    return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
+
+
+INVERTIR_KEYWORDS = [
+    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates"
+]
+APRENDER_KEYWORDS = [
+    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso"
+]
+
 
 def contains_word(text: str, word: str) -> bool:
     text = (text or "").lower()
@@ -438,29 +450,31 @@ def chatbot(msg, state, uid):
 # ======================================================
     if state["modo"] is None:
 
-      if contains_word(m, "invertir"):
+      if contains_any(m, INVERTIR_KEYWORDS): 
         state["modo"] = "invertir"
         state["last_action"] = "save_name"
         return (
-            "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.\n"
+            "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores y resuelva tus dudas.\n"
             "¿Cuál es tu nombre completo? ✨"
         )
 
-      if contains_word(m, "mentoria"):
+      if contains_any(m, APRENDER_KEYWORD):
         state["modo"] = "mentoria"
         state["last_action"] = "save_name"
         return (
-            "Excelente 📘 vamos a registrar tus datos.\n"
-            "¿Cuál es tu nombre completo? ✨"
+            ""Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
         )
 
     # 👇 RESPUESTA POR DEFECTO (CLAVE)
-      return (
-        "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-        "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
-        "Ahora dime, ¿Deseas *mentoria* o *invertir*? 🤔"
+      if not state.get("welcomed"):
+            state["welcomed"] = True
+            return (
+              "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+              "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
+              "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
     )
-
+          
+      return None
 
     # ======================================================
     #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
@@ -534,4 +548,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
