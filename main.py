@@ -462,7 +462,7 @@ def chatbot(msg, state, uid):
         state["modo"] = "mentoria"
         state["last_action"] = "save_name"
         return (
-            ""Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
+            "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
         )
 
     # 👇 RESPUESTA POR DEFECTO (CLAVE)
@@ -548,5 +548,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
