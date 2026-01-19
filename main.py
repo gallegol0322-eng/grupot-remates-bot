@@ -13,7 +13,7 @@ def contains_any(text: str, words: list) -> bool:
 
 
 INVERTIR_KEYWORDS = [
-    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates"
+    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar"
 ]
 APRENDER_KEYWORDS = [
     "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso"
@@ -567,3 +567,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
