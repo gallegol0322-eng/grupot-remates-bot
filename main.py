@@ -13,9 +13,6 @@ def contains_word(text: str, word: str) -> bool:
     return re.search(rf"\b{re.escape(word.lower())}\b", text) is not None
 
 
-
-
-
 GHL_WEBHOOK_URL = os.getenv("GHL_WEBHOOK_URL")
 
 def enviar_a_ghl(state, uid):
@@ -85,7 +82,7 @@ def extract_name(text):
     text = re.sub(r"[^a-záéíóúñ ]", "", text)
 
     invalid = [
-        "invertir","aprender","si","no","ok","vale","listo","claro","gracias"
+        "invertir","aprender","si","no","ok","vale","listo","claro","gracias","mentoria"
     ]
 
     if text in invalid:
@@ -312,10 +309,6 @@ def process_confirmation(msg, state, uid):
                 "completed": True
             })
 
-
-            
-
-
            return (
                   "Perfecto ✔️ Registro guardado.\n"
                   "Un asesor te contactará pronto 💌\n\n"
@@ -342,12 +335,6 @@ def process_confirmation(msg, state, uid):
 
         return f"Ok, repíteme tu {field}."
 
-    # si responde algo raro #
-    
-    
-    
-    
-  
 # ==============================================
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
 # ==============================================
@@ -435,13 +422,13 @@ def chatbot(msg, state, uid):
             "last_action": None,
             "confirming": None
         })
-        return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas aprender o invertir?"
+        return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas mentoria o invertir?"
 
     # ======================================================
     #  ACCESO DIRECTO A ASESOR
     # ======================================================
     if "asesor" in m or "asesoria" in m:
-        return "Contacto directo 👇 https://wa.me/573160422795"
+        return "Contacto directo con un asesor 👇 https://wa.me/573160422795"
 
     # ======================================================
     #  SI NO HAY MODO DEFINIDO TODAVÍA
@@ -459,8 +446,8 @@ def chatbot(msg, state, uid):
             "¿Cuál es tu nombre completo? ✨"
         )
 
-      if contains_word(m, "aprender"):
-        state["modo"] = "aprender"
+      if contains_word(m, "mentoria"):
+        state["modo"] = "mentoria"
         state["last_action"] = "save_name"
         return (
             "Excelente 📘 vamos a registrar tus datos.\n"
@@ -471,15 +458,15 @@ def chatbot(msg, state, uid):
       return (
         "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
         "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
-        "Ahora dime, ¿Deseas *aprender* o *invertir*? 🤔"
+        "Ahora dime, ¿Deseas *mentoria* o *invertir*? 🤔"
     )
 
 
     # ======================================================
     #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
     # ======================================================
-    if state["modo"] == "aprender":
-        return "Un asesor te contactará directamente para aprendizaje 😊"
+    if state["modo"] == "mentoria":
+        return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨😊"
 
     # ======================================================
     #  MODO INVERTIR — FLUJO ACTIVO
@@ -547,23 +534,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
