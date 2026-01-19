@@ -458,9 +458,10 @@ def chatbot(msg, state, uid):
             "¿Cuál es tu nombre completo? ✨"
         )
 
-      if contains_any(m, APRENDER_KEYWORD):
+      if contains_any(m, APRENDER_KEYWORDS):
         state["modo"] = "mentoria"
-        state["last_action"] = "save_name"
+        state["completed"] = True
+        enviar_a_ghl(state, uid)
         return (
             "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
         )
@@ -548,6 +549,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
