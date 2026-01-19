@@ -93,6 +93,10 @@ def extract_name(text):
     text = text.lower().strip()   
     text = re.sub(r"[^a-záéíóúñ ]", "", text)
 
+    for w in INVERTIR_KEYWORDS + APRENDER_KEYWORDS:
+        if re.search(rf"\b{re.escape(w)}\b", text):
+            return None
+
     invalid = [
         "invertir","aprender","si","no","ok","vale","listo","claro","gracias","mentoria"
     ]
@@ -549,6 +553,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
