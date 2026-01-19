@@ -473,14 +473,20 @@ def chatbot(msg, state, uid):
         )
 
       if contains_any(m, APRENDER_KEYWORDS):
-        state["modo"] = "mentoria"
-        enviar_a_ghl(state, uid)
-        state["completed"] = True
-      
-        return (
-            "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
-        )
+        state.update({
+            "modo": "mentoria",
+            "name": state.get("name") or "Lead Mentoría",
+            "city": state.get("city") or "No informado",
+            "phone": state.get("phone") or "",
+            "completed": True
+        })
 
+        enviar_a_ghl(state, uid)
+          
+        return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
+
+
+        
       if not state.get("welcomed"):
             state["welcomed"] = True
             return (
@@ -569,5 +575,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
