@@ -465,9 +465,9 @@ def chatbot(msg, state, uid):
 
       if contains_any(m, APRENDER_KEYWORDS):
          state["modo"] = "mentoria"
-         enviar_a_ghl(state, uid)  # 🔥 PRIMERO DISPARA GHL
          state["estado_lead"] = "listo_para_mentoria"
          state["completed"] = True
+         enviar_a_ghl(state, uid) 
             
          return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
 
@@ -561,6 +561,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
