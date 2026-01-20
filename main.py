@@ -77,7 +77,7 @@ def get_state(uid):
             "last_action": None,
             "confirming": None,
             "completed": False,
-            "locked": False
+            "locked": False,
             "welcomed": False
         }
     return user_states[uid]
@@ -575,6 +575,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
