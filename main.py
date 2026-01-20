@@ -7,6 +7,9 @@ from clean_text import clean_text
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
 import requests
 
+
+
+
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
@@ -412,6 +415,10 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
+    m = msg.lower().strip()
+
+    
+    
     if m == "desbloquear":
       state["locked"] = False
       state["completed"] = False
@@ -534,18 +541,6 @@ def chatbot(msg, state, uid):
 # ==============================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    
-    # 🔒 BLOQUEO DESDE GOHIGHLEVEL
-    if data.get("action") == "lock":
-       state = get_state(uid)
-       state["locked"] = True
-       return jsonify({"success": True}), 200
-
-
-
-
-
-    
     data = request.get_json(force=True) or {}
 
     uid = str(
@@ -556,28 +551,43 @@ def webhook():
         or "anon"
     )
 
+    state = get_state(uid)
+
+    # ============================
+    # 🔒 EVENTOS DE GHL
+    # ============================
+    action = data.get("action")
+
+    if action == "lock":
+        state["locked"] = True
+        return jsonify({"success": True}), 200
+
+    if action == "unlock":
+        state["locked"] = False
+        state["completed"] = False
+        state["modo"] = None
+        state["last_action"] = None
+        state["confirming"] = None
+        state["welcomed"] = False
+        return jsonify({"success": True}), 200
+
+    # ============================
+    # 💬 MENSAJE HUMANO
+    # ============================
     raw_msg = data.get("message") or data.get("text") or data.get("comment") or ""
 
-    # Blindaje total
     if isinstance(raw_msg, dict):
-    # 🔥 CASO TELÉFONO DE INSTAGRAM
-       msg = (
-        raw_msg.get("body")
-        or raw_msg.get("text")
-        or raw_msg.get("phone_number")
-        or ""
-    )
+        msg = raw_msg.get("body") or raw_msg.get("text") or raw_msg.get("phone_number") or ""
     else:
         msg = str(raw_msg)
 
-    state = get_state(uid)
+    if not msg.strip():
+        return jsonify({"success": True}), 200
+
     respuesta = chatbot(msg, state, uid)
 
-    # 👇 CLAVE PARA GOHIGHLEVEL
-    return jsonify({
-        "success": True,
-        "respuesta": respuesta
-    }), 200
+    return jsonify({"success": True, "respuesta": respuesta}), 200
+
 
 
 
@@ -589,6 +599,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
