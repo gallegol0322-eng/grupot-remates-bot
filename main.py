@@ -412,6 +412,20 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
+    if m == "desbloquear":
+      state["locked"] = False
+      state["completed"] = False
+      state["modo"] = None
+      state["last_action"] = None
+      state["confirming"] = None
+      state["welcomed"] = False
+
+      return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
+
+
+
+
+    
     if state.get("locked"):
         return ""
 
@@ -575,6 +589,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
