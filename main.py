@@ -8,18 +8,16 @@ from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, come
 import requests
 
 
-
-
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
 
 
 INVERTIR_KEYWORDS = [
-    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar"
+    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar","las dos", "ambas", "dos", "todo", "todo junto"
 ]
 APRENDER_KEYWORDS = [
-    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "las dos", "ambas", "dos"
+    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "clases"
 ]
 
 
@@ -78,7 +76,6 @@ def get_state(uid):
             "phone": None,
             "modo": None,
             "last_action": None,
-            "confirming": None,
             "completed": False,
             "locked": False,
             "welcomed": False
@@ -378,9 +375,10 @@ def handle_action(msg, state, uid):
         
         if c: 
             state["city"]=c
-            state["confirming"] = "ciudad"
+            state["last_action"] = "save_phone"
             return (
-                  f"Genial 🙌 entonces estás en {c}. Confirmame con (si/no) ✍️"
+                  f"{state['name']} 📱 escríbeme tu número de WhatsApp.✍️\n"
+                  "Ejemplo: 3053662888"
                    )
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
@@ -390,23 +388,34 @@ def handle_action(msg, state, uid):
     # ========================== 
     if state["last_action"] == "save_phone":
         p = extract_phone(msg)
-
         if p:
             state["phone"] = p
-            state["confirming"] = "telefono"
+
+            try: 
+                guardar_en_google_sheets(
+                modo=state["modo"],
+                name=state["name"],
+                city=state["city"],
+                phone=state["phone"]
+            )
+
+            except:
+                pass
+
+            enviar_a_ghl(state, uid)
+
+            state["completed"] = True
+            state["locked"] = True
+
             return (
-                 "Perfecto ✔️ Registro guardado.\n"
-                 "Un asesor se pondrá en contacto contigo en breve 💌"
+                 "Perfecto ✔️ Registro guardado.💌\n"
+                 "Un asesor se pondrá en contacto contigo en breve 💼📞"
             )
 
 
 
-        return (
-            f"{state['name']} 📱 escríbeme tu número de WhatsApp.\n"
-            "Ejemplo: 3053662888\n"
-        )
+        return "Ese número no parece válido, escríbelo nuevamente."
 
-    return None
 
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
@@ -415,6 +424,9 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
+    if state.get("locked"):
+      return ""
+
     m = msg.lower().strip()
 
     
@@ -430,12 +442,6 @@ def chatbot(msg, state, uid):
       return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
 
 
-
-
-    
-    if state.get("locked"):
-        return ""
-
     if state.get("modo") and (state["last_action"] or state["confirming"]):
         forced = handle_action(msg, state, uid)
         if forced: 
@@ -445,9 +451,6 @@ def chatbot(msg, state, uid):
             "Por favor responde al mensaje anterior."
         )
             
-
-    
-    m = msg.lower().strip()
 
     # ======================================================
     #  CANCELAR
@@ -477,40 +480,32 @@ def chatbot(msg, state, uid):
 # ======================================================
     if state["modo"] is None:
 
-      if contains_any(m, INVERTIR_KEYWORDS): 
+      if contains_any(m, INVERTIR_KEYWORDS):
         state["modo"] = "invertir"
         state["estado_lead"] = "listo_para_invertir"
-        state["last_action"] = "save_name"
-        return (
-            "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores y resuelva tus dudas.\n"
-            "¿Cuál es tu nombre completo? ✨"
-        )
+ 
+      elif contains_any(m, APRENDER_KEYWORDS):
+        state["modo"] = "mentoria"
+        state["estado_lead"] = "listo_para_mentoria"
 
-      if contains_any(m, APRENDER_KEYWORDS):
-         state["modo"] = "mentoria"
-         state["estado_lead"] = "listo_para_mentoria"
-         state["completed"] = True
-         enviar_a_ghl(state, uid) 
-            
-         return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
-
-
-        
-      if not state.get("welcomed"):
+      else:
+        if not state.get("welcomed"):
             state["welcomed"] = True
             return (
-              "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-              "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
-              "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
-    )
-          
-      return None
+                "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+                "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
+                "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+            )
+        return None
 
-    # ======================================================
-    #  MODO APRENDER — TU COMPAÑERO MANEJA ESTO EN MANYCHAT
-    # ======================================================
-    if state["modo"] == "mentoria":
-        return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨😊"
+    # 👇 ESTO SOLO SE EJECUTA SI YA DEFINIÓ MODO
+    if state["last_action"] is None:
+       state["last_action"] = "save_name"
+    
+       return (
+         "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.\n"
+         "¿Cuál es tu nombre completo? ✨"
+    )
 
     # ======================================================
     #  MODO INVERTIR — FLUJO ACTIVO
@@ -599,6 +594,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
