@@ -496,7 +496,7 @@ def chatbot(msg, state, uid):
                 "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
                 "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
             )
-        return None
+
 
     # 👇 ESTO SOLO SE EJECUTA SI YA DEFINIÓ MODO
     if state["last_action"] is None:
@@ -594,6 +594,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
