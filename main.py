@@ -16,7 +16,7 @@ INVERTIR_KEYWORDS = [
     "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar"
 ]
 APRENDER_KEYWORDS = [
-    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso"
+    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "las dos", "ambas", "dos"
 ]
 
 
@@ -391,9 +391,10 @@ def handle_action(msg, state, uid):
             state["phone"] = p
             state["confirming"] = "telefono"
             return (
-                   f"Perfecto {state['name']}, ¿este es tu número? {p}"
-
+                 "Perfecto ✔️ Registro guardado.\n"
+                 "Un asesor se pondrá en contacto contigo en breve 💌"
             )
+
 
 
         return (
@@ -561,6 +562,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
