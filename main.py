@@ -38,7 +38,7 @@ def enviar_a_ghl(state, uid):
         "phone": state.get("phone"),
         "city": state.get("city"),
         "modo": state.get("modo"),
-        "estado_lead": f"listo_para_{state.get('modo')}",
+        "estado_lead": state.get("estado_lead"),
         "source": "instagram_bot"
     }
 
@@ -311,20 +311,10 @@ def process_confirmation(msg, state, uid):
                )
            except:
                pass
-
-           if state["modo"] == "invertir":
-                 enviar_a_ghl(state, uid)
-
-           state.update({
-                "name": None,
-                "city": None,
-                "phone": None,
-                "modo": None,
-                "last_action": None,
-                "confirming": None,
-                "completed": True
-            })
-
+           enviar_a_ghl(state, uid)
+               
+           state["completed"] = True
+            
            return (
                   "Perfecto ✔️ Registro guardado.\n"
                   "Un asesor te contactará pronto 💌\n\n"
@@ -421,7 +411,7 @@ def chatbot(msg, state, uid):
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
     if state.get("completed"):
-        return ""
+        return "✅ Ya estamos gestionando tu solicitud con un asesor."
 
     if state.get("modo") and (state["last_action"] or state["confirming"]):
         forced = handle_action(msg, state, uid)
@@ -466,6 +456,7 @@ def chatbot(msg, state, uid):
 
       if contains_any(m, INVERTIR_KEYWORDS): 
         state["modo"] = "invertir"
+        state["estado_lead"] = "listo_para_invertir"
         state["last_action"] = "save_name"
         return (
             "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores y resuelva tus dudas.\n"
@@ -473,17 +464,12 @@ def chatbot(msg, state, uid):
         )
 
       if contains_any(m, APRENDER_KEYWORDS):
-        state.update({
-            "modo": "mentoria",
-            "name": state.get("name") or "Lead Mentoría",
-            "city": state.get("city") or "No informado",
-            "phone": state.get("phone") or "",
-            "completed": True
-        })
-
-        enviar_a_ghl(state, uid)
-          
-        return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
+         state["modo"] = "mentoria"
+         enviar_a_ghl(state, uid)  # 🔥 PRIMERO DISPARA GHL
+         state["estado_lead"] = "listo_para_mentoria"
+         state["completed"] = True
+            
+         return "Un asesor se pondrá en contacto contigo para tu mentoría 🧠✨"
 
 
         
@@ -491,7 +477,7 @@ def chatbot(msg, state, uid):
             state["welcomed"] = True
             return (
               "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-              "👋 Somos Grupo T. Vimos tu interés sobre remates hipotecarios.\n"
+              "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
               "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
     )
           
@@ -575,6 +561,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
