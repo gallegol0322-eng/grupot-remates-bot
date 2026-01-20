@@ -77,6 +77,7 @@ def get_state(uid):
             "last_action": None,
             "confirming": None,
             "completed": False,
+            "locked": False
             "welcomed": False
         }
     return user_states[uid]
@@ -411,8 +412,8 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
-    if state.get("completed"):
-        return "✅ Ya estamos gestionando tu solicitud con un asesor."
+    if state.get("locked"):
+        return ""
 
     if state.get("modo") and (state["last_action"] or state["confirming"]):
         forced = handle_action(msg, state, uid)
@@ -519,6 +520,18 @@ def chatbot(msg, state, uid):
 # ==============================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
+    
+    # 🔒 BLOQUEO DESDE GOHIGHLEVEL
+    if data.get("action") == "lock":
+       state = get_state(uid)
+       state["locked"] = True
+       return jsonify({"success": True}), 200
+
+
+
+
+
+    
     data = request.get_json(force=True) or {}
 
     uid = str(
@@ -562,6 +575,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
