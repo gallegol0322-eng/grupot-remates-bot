@@ -88,7 +88,7 @@ def get_state(uid):
 
 def extract_name(text):
     if not text:
-        return ""
+        return "No reconozco tu nombre"
 
     # Normalización inicial
     text = text.lower().strip()   
@@ -538,39 +538,19 @@ def chatbot(msg, state, uid):
 @app.route("/webhook", methods=["POST"])
 def webhook():
 
+    data = request.get_json(force=True) or {}
+
     uid = get_ghl_uid(data)
     state = get_state(uid)
 
     print("DEBUG UID:", uid)
+    print("DEBUG STATE BEFORE:", state)
 
-    data = request.get_json(force=True) or {}
-
-    def get_ghl_uid(data: dict) -> str:
-    # GHL: contact_id es el ID real del contacto
-       contact_id = data.get("contact_id")
-    if contact_id:
-        return str(contact_id)
-
-    # fallback defensivo
-    return str(
-        data.get("user_id")
-        or data.get("sender_id")
-        or data.get("profile_id")
-        or "anon"
-    )
-
-
-
-    state = get_state(uid)
-
-    # ============================
-    # 🔒 EVENTOS DE GHL
-    # ============================
     action = data.get("action")
 
     if action == "lock":
-        state["locked"] = True
-        return jsonify({"success": True}), 200
+        state ["locked"] = True
+        return jsonify({"success": True}),200
 
     if action == "unlock":
         state["locked"] = False
@@ -580,7 +560,7 @@ def webhook():
         state["confirming"] = None
         state["welcomed"] = False
         return jsonify({"success": True}), 200
-
+            
     # ============================
     # 💬 MENSAJE HUMANO
     # ============================
@@ -596,6 +576,8 @@ def webhook():
 
     respuesta = chatbot(msg, state, uid)
 
+    print("DEBUG STATE AFTER:", state)
+
     if not respuesta:
         respuesta = "👋 Por favor responde el mensaje anterior 💬"
         
@@ -603,6 +585,8 @@ def webhook():
         "success": True, 
         "respuesta": respuesta
     }), 200
+
+
 
 @app.route("/",methods=["GET"])
 def home():
@@ -612,6 +596,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
