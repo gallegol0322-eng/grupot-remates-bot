@@ -347,7 +347,7 @@ def process_confirmation(msg, state, uid):
 # ==============================================
 def handle_action(msg, state, uid):
     nombre = state.get("name") or ""
-
+ 
 
     if state["confirming"]:
         return process_confirmation(msg, state, uid)
@@ -553,13 +553,15 @@ def webhook():
         return jsonify({"success": True}),200
 
     if action == "unlock":
+      state.update({
         state["locked"] = False
         state["completed"] = False
         state["modo"] = None
         state["last_action"] = None
         state["confirming"] = None
         state["welcomed"] = False
-        return jsonify({"success": True}), 200
+      })
+      return jsonify({"success": True}), 200
             
     # ============================
     # 💬 MENSAJE HUMANO
@@ -567,7 +569,7 @@ def webhook():
     raw_msg = data.get("message") or data.get("text") or data.get("comment") or ""
 
     if isinstance(raw_msg, dict):
-        msg = raw_msg.get("body") or raw_msg.get("text") or raw_msg.get("phone_number") or ""
+        msg = raw_msg.get("body") or ""
     else:
         msg = str(raw_msg)
 
@@ -580,9 +582,9 @@ def webhook():
 
     if not respuesta:
         respuesta = "👋 Por favor responde el mensaje anterior 💬"
-        
+
     return jsonify({
-        "success": True, 
+        "success": True,
         "respuesta": respuesta
     }), 200
 
@@ -596,6 +598,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
