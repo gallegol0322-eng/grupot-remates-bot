@@ -88,7 +88,7 @@ def get_state(uid):
 
 def extract_name(text):
     if not text:
-        return None
+        return ""
 
     # Normalización inicial
     text = text.lower().strip()   
@@ -96,14 +96,14 @@ def extract_name(text):
 
     for w in INVERTIR_KEYWORDS + APRENDER_KEYWORDS:
         if re.search(rf"\b{re.escape(w)}\b", text):
-            return None
+            return ""
 
     invalid = [
         "invertir","aprender","si","no","ok","vale","listo","claro","gracias","mentoria"
     ]
 
     if text in invalid:
-        return None
+        return ""
 
     # Buscar expresiones comunes
     match = re.search(r"(me llamo|mi nombre es|soy)\s+(.*)", text)
@@ -118,7 +118,7 @@ def extract_name(text):
 
     # si no hay partes válidas
     if not parts:
-        return None
+        return ""
 
     # tomar solo el primer nombre
     primer_nombre = parts[0]
@@ -228,12 +228,12 @@ def extract_city(text):
 
 def extract_phone(text):
     if not text:
-        return None
+        return ""
     
     # quitar todo lo que no sea número
     phone = re.sub(r"\D", "", text)
     if not phone:
-        return None
+        return ""
 
     if phone.startswith("57") and len(phone) == 12:
         return "+57" + phone[2:]
@@ -246,7 +246,7 @@ def extract_phone(text):
     if 7 <= len(phone) <= 15:
         return "+" + phone
 
-    return None
+    return ""
 
     
 # ==============================================
@@ -448,7 +448,7 @@ def chatbot(msg, state, uid):
             return forced
         return (
             "Seguimos con tu registro 😊\n"
-            "Por favor responde al mensaje anterior."
+            "👀 Por favor responde al mensaje anterior."
         )
             
 
@@ -496,6 +496,7 @@ def chatbot(msg, state, uid):
                 "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
                 "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
             )
+        return "👋¿Deseas adquirir una propiedad o aprender sobre remates?✨"
 
 
     # 👇 ESTO SOLO SE EJECUTA SI YA DEFINIÓ MODO
@@ -581,10 +582,13 @@ def webhook():
 
     respuesta = chatbot(msg, state, uid)
 
-    return jsonify({"success": True, "respuesta": respuesta}), 200
-
-
-
+    if not respuesta:
+        respuesta = "👋 Por favor responde el mensaje anterior 💬"
+        
+    return jsonify({
+        "success": True, 
+        "respuesta": respuesta
+    }), 200
 
 @app.route("/",methods=["GET"])
 def home():
@@ -594,6 +598,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
