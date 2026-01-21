@@ -554,12 +554,12 @@ def webhook():
 
     if action == "unlock":
       state.update({
-        state["locked"] = False
-        state["completed"] = False
-        state["modo"] = None
-        state["last_action"] = None
-        state["confirming"] = None
-        state["welcomed"] = False
+        "locked" : False,
+        "completed" : False,
+        "modo" : None,
+        "last_action" : None,
+        "confirming" : None,
+        "welcomed" : False
       })
       return jsonify({"success": True}), 200
             
@@ -598,6 +598,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
