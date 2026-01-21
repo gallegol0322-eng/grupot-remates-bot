@@ -457,7 +457,8 @@ def chatbot(msg, state, uid):
             "phone": None,
             "modo": None,
             "last_action": None,
-            "confirming": None
+            "confirming": None,
+            
         })
         return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas mentoria o invertir?"
 
@@ -614,5 +615,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
