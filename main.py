@@ -445,16 +445,6 @@ def chatbot(msg, state, uid):
       state["welcomed"] = False
 
       return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
-
-
-   """ if state.get("modo") and (state["last_action"] or state["confirming"]):
-        forced = handle_action(msg, state, uid)
-        if forced: 
-            return forced
-        return (
-            "Seguimos con tu registro 😊\n"
-            "👀 Por favor responde al mensaje anterior."
-        ) """
             
 
     # ======================================================
@@ -603,6 +593,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
