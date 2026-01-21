@@ -467,6 +467,11 @@ def chatbot(msg, state, uid):
     if "asesor" in m or "asesoria" in m:
         return "Contacto directo con un asesor 👇 https://wa.me/573160422795"
 
+
+    if state.get("name") and not state.get("modo"):
+    # Ya dio datos, no lo reinicies
+       return "Seguimos con tu registro 😊"
+
     # ======================================================
     #  SI NO HAY MODO DEFINIDO TODAVÍA
     # ======================================================
@@ -532,15 +537,29 @@ def chatbot(msg, state, uid):
 # ==============================================
 @app.route("/webhook", methods=["POST"])
 def webhook():
+
+    uid = get_ghl_uid(data)
+    state = get_state(uid)
+
+    print("DEBUG UID:", uid)
+
     data = request.get_json(force=True) or {}
 
-    uid = str(
+    def get_ghl_uid(data: dict) -> str:
+    # GHL: contact_id es el ID real del contacto
+    contact_id = data.get("contact_id")
+    if contact_id:
+        return str(contact_id)
+
+    # fallback defensivo
+    return str(
         data.get("user_id")
         or data.get("sender_id")
-        or data.get("contact_id")
         or data.get("profile_id")
         or "anon"
     )
+
+
 
     state = get_state(uid)
 
@@ -593,6 +612,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
