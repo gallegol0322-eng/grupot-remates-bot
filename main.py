@@ -250,25 +250,6 @@ def extract_phone(text):
 
     return ""
 
-    
-# ==============================================
-# MODELLO DE INTENTOS Y SEMÁNTICA
-# ==============================================
-intent_model = joblib.load("models/intent_model.joblib")
-vectorizer = joblib.load("models/intent_vectorizer.joblib")
-
-with open("intents_v2.json","r",encoding="utf-8") as f:
-    intents = json.load(f)["intents"]
-
-
-def find_semantic(text):
-    q = model_sem.encode(text, convert_to_tensor=True)
-    scores = torch.matmul(q, emb["sentence_embeddings"].T)
-    idx = torch.argmax(scores).item()
-    tag = emb["mapping"][idx]
-    return next((i for i in intents if i["tag"] == tag), None)
-
-
 # ==============================================
 # CONFIRMACIÓN DE DATOS
 # ==============================================
@@ -427,7 +408,7 @@ def chatbot(msg, state, uid):
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
     if state.get("locked"):
-      return ""
+      return "📒 Ya tenemos tus datos. Un asesor te contactará pronto. ✅"
 
     m = msg.lower().strip()
 
@@ -603,6 +584,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
