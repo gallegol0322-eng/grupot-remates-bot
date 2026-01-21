@@ -475,9 +475,9 @@ def chatbot(msg, state, uid):
     # ======================================================
 #  SI NO HAY MODO DEFINIDO TODAVÍA
 # ======================================================
-    if state.get("last_action") is not None:
-       forced = handle_action(msg, state, uid)
-       if forced:
+    if state["modo"] is not None and state.get("last_action") is not None:
+        forced = handle_action(msg, state, uid)
+        if forced:
            return forced
 
     if state["modo"] is None:
@@ -603,6 +603,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
