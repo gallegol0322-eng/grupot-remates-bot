@@ -407,10 +407,35 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
+    
     if state.get("locked"):
       return "📒 Ya tenemos tus datos. Un asesor te contactará pronto. ✅"
 
     m = msg.lower().strip()
+
+    # ======================================================
+#  PRIMER MENSAJE = RESET LIMPIO (como cancel)
+# ======================================================
+    if not state.get("welcomed"):
+      state.update({
+        "name": None,
+        "city": None,
+        "phone": None,
+        "modo": None,
+        "estado_lead": None,
+        "last_action": None,
+        "confirming": None,
+        "completed": False,
+        "locked": False,
+        "welcomed": True
+    })
+
+      return (
+        "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+        "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
+        "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+    )
+
 
     if m == "desbloquear":
       state.update({
@@ -584,6 +609,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
