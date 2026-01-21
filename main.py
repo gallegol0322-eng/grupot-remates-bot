@@ -491,12 +491,12 @@ def chatbot(msg, state, uid):
            return forced
 
     if state["modo"] is None:
-      if contains_any(m, INVERTIR_KEYWORDS):
-        state["modo"] = "invertir"
-        state["estado_lead"] = "listo_para_invertir"
-      elif contains_any(m, APRENDER_KEYWORDS):
+      if contains_any(m, APRENDER_KEYWORDS):
         state["modo"] = "mentoria"
         state["estado_lead"] = "listo_para_mentoria"
+      elif contains_any(m, INVERTIR_KEYWORDS):
+        state["modo"] = "invertir"
+        state["estado_lead"] = "listo_para_invertir"
       else:
         if not state.get("welcomed"):
             state["welcomed"] = True
@@ -613,6 +613,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
