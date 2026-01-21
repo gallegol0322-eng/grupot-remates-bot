@@ -431,8 +431,6 @@ def chatbot(msg, state, uid):
 
     m = msg.lower().strip()
 
-    
-    
     if m == "desbloquear":
       state.update({
         "locked": False,
@@ -456,9 +454,13 @@ def chatbot(msg, state, uid):
             "city": None,
             "phone": None,
             "modo": None,
+            "estado_lead": None,
             "last_action": None,
             "confirming": None,
-            
+            "completed": False,
+            "locked": False,
+            "welcomed": False
+
         })
         return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas mentoria o invertir?"
 
@@ -504,20 +506,6 @@ def chatbot(msg, state, uid):
          "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.🧾\n"
          "¿Cuál es tu nombre completo? ✨"
     )
-
-    # ======================================================
-    #  MODO INVERTIR — FLUJO ACTIVO
-    # ======================================================
-
-    # Confirmación pendiente
-    if state["confirming"]:
-        return process_confirmation(msg, state, uid)
-
-    # Manejo de etapas (nombre, ciudad, teléfono)
-    if state["last_action"]:
-        forced = handle_action(msg, state, uid)
-        if forced:
-            return forced
 
     # ======================================================
     #  SI LLEGA AQUÍ Y SIGUE EN MODO INVERTIR → NO USAR INTENTS
@@ -604,7 +592,7 @@ def webhook():
         print(traceback.format_exc())
 
         # Respondemos 200 para que GHL no marque Failed mientras debugueamos
-        return jsonify({"success": True, "respuesta": "Hubo un problema técnico. Intenta de nuevo en un momento."}), 200
+        return jsonify({"success": True, "respuesta": ""}), 200
 
 
 @app.route("/",methods=["GET"])
@@ -615,6 +603,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
