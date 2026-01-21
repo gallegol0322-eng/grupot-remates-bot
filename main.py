@@ -6,6 +6,8 @@ import re
 from clean_text import clean_text
 from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, comenta esta línea
 import requests
+import traceback
+
 
 
 def contains_any(text: str, words: list) -> bool:
@@ -535,59 +537,79 @@ def chatbot(msg, state, uid):
 # ==============================================
 # ⚡ ENDPOINT PARA MANYCHAT / INSTAGRAM
 # ==============================================
+
+def get_ghl_uid(data: dict) -> str:
+    # En GHL, contact_id suele ser el identificador real del contacto
+    cid = data.get("contact_id") or data.get("contactId")
+    if cid:
+        return str(cid)
+
+    # Fallbacks comunes
+    return str(
+        data.get("user_id")
+        or data.get("sender_id")
+        or data.get("profile_id")
+        or data.get("conversation_id")
+        or data.get("id")
+        or "anon"
+    )
+
+def extract_message_from_payload(data: dict) -> str:
+    """
+    GHL puede enviar el texto en varias claves dependiendo del trigger.
+    Ajustamos con fallbacks defensivos.
+    """
+    # 1) Formato típico
+    raw = data.get("message") or data.get("text") or data.get("comment") or data.get("body") or ""
+
+    # 2) A veces viene anidado
+    if isinstance(raw, dict):
+        raw = raw.get("body") or raw.get("text") or raw.get("message") or ""
+
+    # 3) Otros posibles campos
+    if not raw:
+        raw = data.get("lastMessage") or data.get("incoming_message") or ""
+
+    return str(raw or "").strip()
+
 @app.route("/webhook", methods=["POST"])
 def webhook():
+    try:
+        # 1) Intentar JSON SIN forzar (si no es JSON, no explota)
+        data = request.get_json(silent=True)
 
-    data = request.get_json(force=True) or {}
+        # 2) Si no hay JSON, intentar form-data
+        if not data:
+            data = request.form.to_dict() if request.form else {}
 
-    uid = get_ghl_uid(data)
-    state = get_state(uid)
+        # 3) Último fallback: intentar parsear texto bruto (solo para debug)
+        if not data:
+            raw_body = request.get_data(as_text=True) or ""
+            print("DEBUG RAW BODY:", raw_body[:2000])  # evita logs gigantes
+            data = {}
 
-    print("DEBUG UID:", uid)
-    print("DEBUG STATE BEFORE:", state)
+        print("DEBUG PAYLOAD KEYS:", list(data.keys())[:50])
 
-    action = data.get("action")
+        uid = get_ghl_uid(data)
+        state = get_state(uid)
 
-    if action == "lock":
-        state ["locked"] = True
-        return jsonify({"success": True}),200
+        msg = extract_message_from_payload(data)
 
-    if action == "unlock":
-      state.update({
-        "locked" : False,
-        "completed" : False,
-        "modo" : None,
-        "last_action" : None,
-        "confirming" : None,
-        "welcomed" : False
-      })
-      return jsonify({"success": True}), 200
-            
-    # ============================
-    # 💬 MENSAJE HUMANO
-    # ============================
-    raw_msg = data.get("message") or data.get("text") or data.get("comment") or ""
+        # Si no hay mensaje, respondemos OK
+        if not msg:
+            return jsonify({"success": True, "respuesta": ""}), 200
 
-    if isinstance(raw_msg, dict):
-        msg = raw_msg.get("body") or ""
-    else:
-        msg = str(raw_msg)
+        respuesta = chatbot(msg, state, uid) or "👋 Por favor responde el mensaje anterior 💬"
 
-    if not msg.strip():
-        return jsonify({"success": True}), 200
+        return jsonify({"success": True, "respuesta": respuesta}), 200
 
-    respuesta = chatbot(msg, state, uid)
+    except Exception as e:
+        # Esto es lo que necesitamos ver en Railway para arreglarlo de verdad
+        print("❌ ERROR EN /webhook:", repr(e))
+        print(traceback.format_exc())
 
-    print("DEBUG STATE AFTER:", state)
-
-    if not respuesta:
-        respuesta = "👋 Por favor responde el mensaje anterior 💬"
-
-    return jsonify({
-        "success": True,
-        "respuesta": respuesta
-    }), 200
-
+        # Respondemos 200 para que GHL no marque Failed mientras debugueamos
+        return jsonify({"success": True, "respuesta": "Hubo un problema técnico. Intenta de nuevo en un momento."}), 200
 
 
 @app.route("/",methods=["GET"])
@@ -598,23 +620,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
