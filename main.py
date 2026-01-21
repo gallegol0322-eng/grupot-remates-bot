@@ -547,7 +547,7 @@ def webhook():
 
     def get_ghl_uid(data: dict) -> str:
     # GHL: contact_id es el ID real del contacto
-    contact_id = data.get("contact_id")
+       contact_id = data.get("contact_id")
     if contact_id:
         return str(contact_id)
 
@@ -612,6 +612,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
