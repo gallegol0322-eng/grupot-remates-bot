@@ -429,22 +429,20 @@ def chatbot(msg, state, uid):
     if state.get("locked"):
       return ""
 
-    if state.get("last_action") is not None:
-        forced = handle_action(msg, state, uid)
-        if forced:
-            return forced
-
     m = msg.lower().strip()
 
     
     
     if m == "desbloquear":
-      state["locked"] = False
-      state["completed"] = False
-      state["modo"] = None
-      state["last_action"] = None
-      state["confirming"] = None
-      state["welcomed"] = False
+      state.update({
+        "locked": False,
+        "completed": False,
+        "modo": None,
+        "estado_lead": None,
+        "last_action": None,
+        "confirming": None,
+        "welcomed": False
+      })
 
       return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
             
@@ -468,12 +466,6 @@ def chatbot(msg, state, uid):
     # ======================================================
     if "asesor" in m or "asesoria" in m:
         return "Contacto directo con un asesor 👇 https://wa.me/573160422795"
-
-
-    if state.get("name") and not state.get("modo"):
-    # Ya dio datos, no lo reinicies
-       return "Seguimos con tu registro 😊"
-
     # ======================================================
     #  SI NO HAY MODO DEFINIDO TODAVÍA
     # ======================================================
@@ -481,15 +473,12 @@ def chatbot(msg, state, uid):
 #  SI NO HAY MODO DEFINIDO TODAVÍA
 # ======================================================
     if state["modo"] is None:
-
       if contains_any(m, INVERTIR_KEYWORDS):
         state["modo"] = "invertir"
         state["estado_lead"] = "listo_para_invertir"
- 
       elif contains_any(m, APRENDER_KEYWORDS):
         state["modo"] = "mentoria"
         state["estado_lead"] = "listo_para_mentoria"
-
       else:
         if not state.get("welcomed"):
             state["welcomed"] = True
@@ -506,9 +495,12 @@ def chatbot(msg, state, uid):
        state["last_action"] = "save_name"
     
        return (
-         "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.\n"
+         "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.🧾\n"
          "¿Cuál es tu nombre completo? ✨"
     )
+    forced = handle_action(msg, state, uid)
+    if forced:
+        return forced
 
     # ======================================================
     #  MODO INVERTIR — FLUJO ACTIVO
@@ -620,3 +612,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
