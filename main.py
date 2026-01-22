@@ -233,30 +233,24 @@ def extract_city(text):
 
 def extract_phone(text):
     if not text:
-        return ""
-    
+        return None
     # quitar todo lo que no sea número
-    phone = re.sub(r"\D", "", text)
-    if not phone:
-        return ""
-
     digits = re.sub(r"\D", "", text)
+    
+    if not digits:
+        return None
 
-    if len(digits) == 10 and digits.startswith("3"):
-        return {
-            "phone": "+57" + digits,
-            "country_code": "57",
-            "valid": True
-        }
-        
-    # Viene con 57 delante (12 dígitos)
+    detected_code = None
+    number = None
+
+    # Caso 1: empieza con un código conocido
     for code, info in COUNTRY_PHONE_RULES.items():
         if digits.startswith(code):
-            number = digits[len(code):]
+            possible_number = digits[len(code):]
 
-            if len(number) in info["lengths"]:
+            if len(possible_number) in info["lengths"]:
                 return {
-                    "phone": f"+{code}{number}",
+                    "phone": f"+{code}{possible_number}",
                     "country_code": code,
                     "valid": True
                 }
@@ -264,11 +258,26 @@ def extract_phone(text):
                 return {
                     "country_code": code,
                     "expected_lengths": info["lengths"],
-                    "received_length": len(number),
+                    "received_length": len(possible_number),
                     "valid": False
                 }
 
-    # --- NO IDENTIFICADO ---
+    # 3. Caso SIN código → asumir Colombia
+    if len(digits) == 10 and digits.startswith("3"):
+        return {
+            "phone": f"+57{digits}",
+            "country_code": "57",
+            "valid": True
+        }
+
+    # 4. Número largo sin código claro → pedir código
+    if len(digits) > 10:
+        return {
+            "needs_country_code": True,
+            "valid": False
+        }
+
+    # 5. No reconocible
     return None
 
 def is_correction(text: str) -> bool:
@@ -280,14 +289,14 @@ def is_correction(text: str) -> bool:
 
 
 def detect_field_from_text(text: str) -> str | None:
-    if extract_phone(text):
+    result = extract_phone(text)
+    if result and result.get("valid"):
         return "phone"
     if extract_city(text):
         return "city"
     if extract_name(text):
         return "name"
     return None
-
 # ==============================================
 # CONFIRMACIÓN DE DATOS
 # ==============================================
@@ -380,7 +389,47 @@ def handle_action(msg, state, uid):
 
     if state["confirming"]:
         return process_confirmation(msg, state, uid)
-        
+
+
+    if state["last_action"] == "save_phone_with_code":
+       number = re.sub(r"\D", "", msg)
+       rule = COUNTRY_PHONE_RULES.get(state["country_code"])
+
+       if not rule:
+          state["last_action"] = "ask_country_code"
+          return "Código de país inválido. Escríbelo nuevamente."
+
+       if len(number) not in rule["lengths"]:
+          return (
+            f"⚠️ Para {rule['country']} el número debe tener "
+            f"{rule['lengths']} dígitos (sin código país)."
+        )
+
+        state["phone"] = f"+{state['country_code']}{number}"
+
+        try:
+          guardar_en_google_sheets(
+            modo=state["modo"],
+            name=state["name"],
+            city=state["city"],
+            phone=state["phone"]
+        )
+         except:
+              pass
+
+         enviar_a_ghl(state, uid)
+
+         state["completed"] = True
+         state["locked"] = True
+
+         return "Perfecto ✔️ Número validado y actualizado."
+
+
+    
+
+
+
+    
     # ==========================
     # ----- Guardar nombre -----
     # ==========================
@@ -465,11 +514,10 @@ def chatbot(msg, state, uid):
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
     m = msg.lower().strip()
-
+    
     if m in ["gracias", "muchas gracias", "mil gracias", "thank you", "thanks", "okis"]:
         return "¡Con gusto!.😊 Un asesor te contactará"
-
-    # ==============================
+# ==============================
 # 🧠 INTERCEPTOR DE CORRECCIONES
 # ==============================
     if is_correction(m):
@@ -477,8 +525,12 @@ def chatbot(msg, state, uid):
 
     # 📞 Corrección directa de teléfono
       if field == "phone":
-        state["phone"] = extract_phone(msg)
+        result = extract_phone(msg)
 
+        if result and result.get("valid"):
+           state["phone"] = result["phone"]
+        else:
+           return "⚠️ El número no es válido. Escríbelo nuevamente con código de país."
         try:
             guardar_en_google_sheets(
                 modo=state["modo"],
@@ -488,7 +540,6 @@ def chatbot(msg, state, uid):
             )
         except:
             pass
-
         enviar_a_ghl(state, uid)
         state["completed"] = True
         state["locked"] = True
@@ -713,3 +764,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
