@@ -9,6 +9,18 @@ import requests
 import traceback
 
 
+COUNTRY_PHONE_RULES = {
+    "57": {"country": "Colombia", "lengths": [10]},
+    "52": {"country": "México", "lengths": [10]},
+    "1":  {"country": "EEUU/Canadá", "lengths": [10]},
+    "54": {"country": "Argentina", "lengths": [10]},
+    "56": {"country": "Chile", "lengths": [9]},
+    "51": {"country": "Perú", "lengths": [9]},
+    "58": {"country": "Venezuela", "lengths": [10]},
+    "34": {"country": "España", "lengths": [9]},
+}
+
+
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
@@ -236,17 +248,35 @@ def extract_phone(text):
     if not phone:
         return ""
 
-    if phone.startswith("57") and len(phone) == 12:
-        return "+57 " + phone[2:]
+    digits = re.sub(r"\D", "", text)
 
-    # Caso 2: viene solo el número colombiano (10 dígitos)
-    if len(phone) == 10 and phone.startswith("3"):
-        return "+57 " + phone
+    if len(digits) == 10 and digits.startswith("3"):
+        return {
+            "phone": "+57" + digits,
+            "country_code": "57",
+            "valid": True
+        }
+        
+    # Viene con 57 delante (12 dígitos)
+    for code, info in COUNTRY_PHONE_RULES.items():
+        if digits.startswith(code):
+            number = digits[len(code):]
 
-     # Caso 3: número internacional (7 a 15 dígitos)
-    if 7 <= len(phone) <= 15:
-        return "+" + phone
+            if len(number) in info["lengths"]:
+                return {
+                    "phone": f"+{code}{number}",
+                    "country_code": code,
+                    "valid": True
+                }
+            else:
+                return {
+                    "country_code": code,
+                    "expected_lengths": info["lengths"],
+                    "received_length": len(number),
+                    "valid": False
+                }
 
+    # --- NO IDENTIFICADO ---
     return ""
 
 def is_correction(text: str) -> bool:
@@ -291,14 +321,14 @@ def process_confirmation(msg, state, uid):
         
         if field == "nombre":
             state["last_action"] = "save_city"
-            return f"Genial {state['name']} 😊 ¿De qué ciudad nos escribes?"
+            return f"Genial {state['name']} 😊 ¿De qué ciudad de Colombia tienes interés?"
 
         if field == "ciudad":
            state["last_action"] = "save_phone"
            return (
             f"{state['name']} 📱 regálame tu número de WhatsApp.\n"
             "Ejemplo:\n"
-            "3053662888"
+            "+57 3053662888"
            )
 
         if field == "telefono":
@@ -346,7 +376,17 @@ def process_confirmation(msg, state, uid):
 # ==============================================
 def handle_action(msg, state, uid):
     nombre = state.get("name") or ""
- 
+
+    if state["last_action"] == "ask_country_code":
+        code = re.sub (r"\D", "", msg)
+
+        if 1 <= len(code) <= 4:
+             state["last_action"] = "save_phone_with_code"
+             state["country_code"] = code
+             return f"Perfecto 👍 ahora escríbeme el número SIN el código del país."
+
+        return "Por favor escribe solo el código del país (ej: 57, 52, 1)."
+    
 
     if state["confirming"]:
         return process_confirmation(msg, state, uid)
@@ -377,7 +417,7 @@ def handle_action(msg, state, uid):
             state["last_action"] = "save_phone"
             return (
                   f"{state['name']} 📱 escríbeme tu número de WhatsApp.✍️\n"
-                  "Ejemplo: 3053662888"
+                  "Ejemplo: +57 3053662888"
                    )
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
@@ -387,35 +427,47 @@ def handle_action(msg, state, uid):
     # ========================== 
     if state["last_action"] == "save_phone":
         p = extract_phone(msg)
-        if p:
-            state["phone"] = p
+        result = extract_phone(msg)
 
-            try: 
-                guardar_en_google_sheets(
+        
+        if result and result.get("valid"):
+          state["phone"] = result["phone"]
+
+          try:
+            guardar_en_google_sheets(
                 modo=state["modo"],
                 name=state["name"],
                 city=state["city"],
                 phone=state["phone"]
             )
+          except:
+            pass
 
-            except:
-                pass
+          enviar_a_ghl(state, uid)
 
-            enviar_a_ghl(state, uid)
+          state["completed"] = True
+          state["locked"] = True
 
-            state["completed"] = True
-            state["locked"] = True
-
-            return (
+          return (
                  "Perfecto ✔️ Registro guardado.💌\n"
                  "Un asesor se pondrá en contacto contigo en breve 💼📞"
             )
 
+        if result and not result.get("valid"):
+           return (
+            f"⚠️ El número no parece válido para el país (+{result['country_code']}).\n"
+            f"Debe tener {result['expected_lengths']} dígitos sin el código.\n"
+            "Por favor corrígelo."
+        )
 
-
-        return "Ese número no parece válido, escríbelo nuevamente."
-
-
+    # ❌ No se reconoce país
+        state["last_action"] = "ask_country_code"
+        return (
+          "🌍 No pude identificar el país del número.\n"
+          "Escríbeme el **código del país**.\n"
+          "Ejemplos:\n"
+          "🇨🇴 57,  🇲🇽, 52  🇺🇸, 1  🇦🇷, 54"
+    )
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
 # ==============================================
@@ -682,6 +734,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
