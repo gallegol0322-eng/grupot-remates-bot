@@ -423,16 +423,16 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
-   m = msg.lower().strip()
+    m = msg.lower().strip()
 
     # ==============================
 # 🧠 INTERCEPTOR DE CORRECCIONES
 # ==============================
-if is_correction(m):
-    field = detect_field_from_text(msg)
+    if is_correction(m):
+      field = detect_field_from_text(msg)
 
     # 📞 Corrección directa de teléfono
-    if field == "phone":
+     if field == "phone":
         state["phone"] = extract_phone(msg)
 
         try:
@@ -449,21 +449,21 @@ if is_correction(m):
         state["completed"] = True
         state["locked"] = True
 
-        return f"Perfecto ✅ Número corregido y registro actualizado. Un asesor te contactará pronto."
+        return "Perfecto ✅ Número corregido y registro actualizado. Un asesor te contactará pronto."
 
     # 🌆 Corrección directa de ciudad
-    if field == "city":
+     if field == "city":
         state["city"] = extract_city(msg)
         state["last_action"] = "save_phone"
         return f"Listo 😊 ahora escríbeme tu número de WhatsApp."
 
     # 👤 Corrección de nombre
-    if field == "name":
+     if field == "name":
         state["name"] = extract_name(msg)
         state["last_action"] = "save_city"
         return f"Gracias {state['name']} 😊 ¿de qué ciudad nos escribes?"
 
-    return (
+     return (
         "Entiendo 👍 ¿qué deseas corregir?\n"
         "• Nombre\n"
         "• Ciudad\n"
@@ -679,3 +679,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
