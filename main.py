@@ -8,7 +8,6 @@ from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, come
 import requests
 import traceback
 
-
 COUNTRY_PHONE_RULES = {
     "57": {"country": "Colombia", "lengths": [10]},
     "52": {"country": "México", "lengths": [10]},
@@ -20,11 +19,9 @@ COUNTRY_PHONE_RULES = {
     "34": {"country": "España", "lengths": [9]},
 }
 
-
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
-
 
 INVERTIR_KEYWORDS = [
     "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar","las dos", "ambas", "dos", "todo", "todo junto"
@@ -33,11 +30,9 @@ APRENDER_KEYWORDS = [
     "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "clases"
 ]
 
-
 def contains_word(text: str, word: str) -> bool:
     text = (text or "").lower()
     return re.search(rf"\b{re.escape(word.lower())}\b", text) is not None
-
 
 GHL_WEBHOOK_URL = os.getenv("GHL_WEBHOOK_URL")
 
@@ -61,7 +56,6 @@ def enviar_a_ghl(state, uid):
         print("✅ Enviado a GHL:", r.status_code)
     except Exception as e:
         print("❌ Error enviando a GHL:", e)
-
 
 app = Flask(__name__)
 
@@ -138,7 +132,6 @@ def extract_name(text):
 
     # capitalizar bonito
     return primer_nombre.title()
-
 
 def extract_city(text):
     text = text.lower().strip()
@@ -238,7 +231,6 @@ def extract_city(text):
         if w in mapa: return mapa[w]
     return mapa.get(norm)
 
-
 def extract_phone(text):
     if not text:
         return ""
@@ -277,7 +269,7 @@ def extract_phone(text):
                 }
 
     # --- NO IDENTIFICADO ---
-    return ""
+    return None
 
 def is_correction(text: str) -> bool:
     keywords = [
@@ -350,8 +342,6 @@ def process_confirmation(msg, state, uid):
                   "Un asesor te contactará pronto 💌\n\n"
             )
 
-
-
         return "Listo."
         
     if msg in neg: 
@@ -380,10 +370,10 @@ def handle_action(msg, state, uid):
     if state["last_action"] == "ask_country_code":
         code = re.sub (r"\D", "", msg)
 
-        if 1 <= len(code) <= 4:
-             state["last_action"] = "save_phone_with_code"
-             state["country_code"] = code
-             return f"Perfecto 👍 ahora escríbeme el número SIN el código del país."
+        if code in COUNTRY_PHONE_RULES:
+           state["country_code"] = code
+           state["last_action"] = "save_phone_with_code"
+           return "Perfecto 👍 ahora escríbeme el número SIN el código del país."
 
         return "Por favor escribe solo el código del país (ej: 57, 52, 1)."
     
@@ -426,7 +416,6 @@ def handle_action(msg, state, uid):
     # ---- GUARDAR TELEFONO -----
     # ========================== 
     if state["last_action"] == "save_phone":
-        p = extract_phone(msg)
         result = extract_phone(msg)
 
         
@@ -525,11 +514,6 @@ def chatbot(msg, state, uid):
         "• Número de WhatsApp"
     )
 
-
-
-
-    
-
     if m in ["cancel", "cancelar"]:
        reset_state(state)
        state.update({
@@ -555,7 +539,6 @@ def chatbot(msg, state, uid):
           "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
     )
 
-
     if m == "desbloquear":
       state.update({
         "locked": False,
@@ -569,7 +552,6 @@ def chatbot(msg, state, uid):
 
       return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
             
-
     # ======================================================
     #  CANCELAR
     # ======================================================
@@ -628,7 +610,6 @@ def chatbot(msg, state, uid):
             )
         return "👋¿Deseas adquirir una propiedad o aprender sobre remates?✨"
 
-
     # 👇 ESTO SOLO SE EJECUTA SI YA DEFINIÓ MODO
     if state["last_action"] is None:
        state["last_action"] = "save_name"
@@ -646,7 +627,6 @@ def chatbot(msg, state, uid):
         "Estamos avanzando con tu registro de inversión.\n"
         "Por favor continúa donde íbamos o escribe tu nombre."
     )
-
 
 # ==============================================
 # ⚡ ENDPOINT PARA MANYCHAT / INSTAGRAM
@@ -725,7 +705,6 @@ def webhook():
         # Respondemos 200 para que GHL no marque Failed mientras debugueamos
         return jsonify({"success": True, "respuesta": ""}), 200
 
-
 @app.route("/",methods=["GET"])
 def home():
     return {"status":"online"},200
@@ -734,8 +713,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
