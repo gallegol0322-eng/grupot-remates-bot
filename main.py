@@ -423,12 +423,6 @@ def handle_action(msg, state, uid):
          state["locked"] = True
 
          return "Perfecto ✔️ Número validado y actualizado."
-
-
-    
-
-
-
     
     # ==========================
     # ----- Guardar nombre -----
@@ -444,7 +438,6 @@ def handle_action(msg, state, uid):
         return (
             "No entendí tu nombre 🤔 Escríbelo nuevamente, por favor."
         )
-
     # ==========================
     # ..... Guardar ciudad .....
     # ==========================
@@ -491,20 +484,19 @@ def handle_action(msg, state, uid):
                  "Un asesor se pondrá en contacto contigo en breve 💼📞"
             )
 
-        if result and not result.get("valid"):
+        elif result and not result.get("valid"):
            return (
             f"⚠️ El número no parece válido para el país (+{result['country_code']}).\n"
             f"Debe tener {result['expected_lengths']} dígitos sin el código.\n"
             "Por favor corrígelo."
         )
-
-    # ❌ No se reconoce país
-        state["last_action"] = "ask_country_code"
-        return (
-          "🌍 No pude identificar el país del número.\n"
-          "Escríbeme el **código del país**.\n"
-          "Ejemplos:\n"
-          "🇨🇴 57,  🇲🇽, 52  🇺🇸, 1  🇦🇷, 54"
+        else:
+            state["last_action"] = "ask_country_code"
+            return (
+              "🌍 No pude identificar el país del número.\n"
+              "Escríbeme el **código del país**.\n"
+              "Ejemplos:\n"
+              "🇨🇴 57,  🇲🇽, 52  🇺🇸, 1  🇦🇷, 54"
     )
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
@@ -764,4 +756,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
