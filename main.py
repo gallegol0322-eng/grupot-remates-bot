@@ -414,7 +414,7 @@ def handle_action(msg, state, uid):
             city=state["city"],
             phone=state["phone"]
         )
-         except:
+        except Exception:
               pass
 
          enviar_a_ghl(state, uid)
@@ -756,5 +756,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
