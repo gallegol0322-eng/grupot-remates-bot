@@ -9,7 +9,6 @@ import requests
 import traceback
 
 
-
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
@@ -250,6 +249,23 @@ def extract_phone(text):
 
     return ""
 
+def is_correction(text: str) -> bool:
+    keywords = [
+        "me equivoqué", "me equivoque", "error", "corrijo",
+        "corrección", "no era", "era", "perdón", "perdon"
+    ]
+    return any(k in text.lower() for k in keywords)
+
+
+def detect_field_from_text(text: str) -> str | None:
+    if extract_phone(text):
+        return "phone"
+    if extract_city(text):
+        return "city"
+    if extract_name(text):
+        return "name"
+    return None
+
 # ==============================================
 # CONFIRMACIÓN DE DATOS
 # ==============================================
@@ -407,7 +423,57 @@ def chatbot(msg, state, uid):
 # ======================================================
 #  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
 # ======================================================
-    m = msg.lower().strip()
+m = msg.lower().strip()
+
+    # ==============================
+# 🧠 INTERCEPTOR DE CORRECCIONES
+# ==============================
+if is_correction(m):
+    field = detect_field_from_text(msg)
+
+    # 📞 Corrección directa de teléfono
+    if field == "phone":
+        state["phone"] = extract_phone(msg)
+
+        try:
+            guardar_en_google_sheets(
+                modo=state["modo"],
+                name=state["name"],
+                city=state["city"],
+                phone=state["phone"]
+            )
+        except:
+            pass
+
+        enviar_a_ghl(state, uid)
+        state["completed"] = True
+        state["locked"] = True
+
+        return "Perfecto ✅ Número corregido y registro actualizado. Un asesor te contactará pronto."
+
+    # 🌆 Corrección directa de ciudad
+    if field == "city":
+        state["city"] = extract_city(msg)
+        state["last_action"] = "save_phone"
+        return f"Listo 😊 ahora escríbeme tu número de WhatsApp."
+
+    # 👤 Corrección de nombre
+    if field == "name":
+        state["name"] = extract_name(msg)
+        state["last_action"] = "save_city"
+        return f"Gracias {state['name']} 😊 ¿de qué ciudad nos escribes?"
+
+    return (
+        "Entiendo 👍 ¿qué deseas corregir?\n"
+        "• Nombre\n"
+        "• Ciudad\n"
+        "• Número de WhatsApp"
+    )
+
+
+
+
+    
 
     if m in ["cancel", "cancelar"]:
        reset_state(state)
@@ -430,8 +496,8 @@ def chatbot(msg, state, uid):
         state["welcomed"] = True
         return (
           "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-          "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
-          "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+          "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
+          "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
     )
 
 
@@ -490,7 +556,7 @@ def chatbot(msg, state, uid):
         if forced:
            return forced
 
-    if state["modo"] is None:
+    if state["modo"] is None and state["last_action"] is None:
       if contains_any(m, APRENDER_KEYWORDS):
         state["modo"] = "mentoria"
         state["estado_lead"] = "listo_para_mentoria"
@@ -613,6 +679,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
