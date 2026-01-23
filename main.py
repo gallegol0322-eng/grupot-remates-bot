@@ -113,7 +113,7 @@ def extract_name(text):
         return ""
 
     # Buscar expresiones comunes
-    match = re.search(r"(me llamo|mi nombre es|soy)\s+(.*)", text)
+    match = re.search(r"(me llamo|mi nombre( completo)? es|soy)\s+(.*)", text)
     if match:
         name = match.group(2).strip()
     else:
@@ -240,29 +240,18 @@ def extract_phone(text):
     if not digits:
         return None
 
-    detected_code = None
-    number = None
 
-    # Caso 1: empieza con un código conocido
-    for code, info in COUNTRY_PHONE_RULES.items():
-        if digits.startswith(code):
-            possible_number = digits[len(code):]
+    # 1️⃣ Caso: +57XXXXXXXXXX o 57XXXXXXXXXX
+    if digits.startswith("57") and len(digits) == 12:
+        number = digits[2:]
+        if number.startswith("3"):
+            return {
+                "phone": f"+57{number}",
+                "country_code": "57",
+                "valid": True
+            }
 
-            if len(possible_number) in info["lengths"]:
-                return {
-                    "phone": f"+{code}{possible_number}",
-                    "country_code": code,
-                    "valid": True
-                }
-            else:
-                return {
-                    "country_code": code,
-                    "expected_lengths": info["lengths"],
-                    "received_length": len(possible_number),
-                    "valid": False
-                }
-
-    # 3. Caso SIN código → asumir Colombia
+    # 2️⃣ Caso: número colombiano sin código
     if len(digits) == 10 and digits.startswith("3"):
         return {
             "phone": f"+57{digits}",
@@ -270,14 +259,31 @@ def extract_phone(text):
             "valid": True
         }
 
-    # 4. Número largo sin código claro → pedir código
+    # 3️⃣ Otros países (con código)
+    for code, info in COUNTRY_PHONE_RULES.items():
+        if digits.startswith(code):
+            number = digits[len(code):]
+            if len(number) in info["lengths"]:
+                return {
+                    "phone": f"+{code}{number}",
+                    "country_code": code,
+                    "valid": True
+                }
+            else:
+                return {
+                    "country_code": code,
+                    "expected_lengths": info["lengths"],
+                    "received_length": len(number),
+                    "valid": False
+                }
+
+    # 4️⃣ Número largo sin código claro
     if len(digits) > 10:
         return {
             "needs_country_code": True,
             "valid": False
         }
 
-    # 5. No reconocible
     return None
 
 def is_correction(text: str) -> bool:
@@ -755,6 +761,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
