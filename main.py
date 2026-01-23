@@ -389,16 +389,6 @@ def handle_action(msg, state, uid):
 
     if state["confirming"]:
         return process_confirmation(msg, state, uid)
-
-
-    if state["last_action"] == "save_phone_with_code":
-       number = re.sub(r"\D", "", msg)
-       rule = COUNTRY_PHONE_RULES.get(state["country_code"])
-
-       if not rule:
-          state["last_action"] = "ask_country_code"
-          return "Código de país inválido. Escríbelo nuevamente."
-
        if len(number) not in rule["lengths"]:
           return (
             f"⚠️ Para {rule['country']} el número debe tener "
@@ -512,29 +502,35 @@ def chatbot(msg, state, uid):
 # 🧠 INTERCEPTOR DE CORRECCIONES
 # ==============================
     if is_correction(m):
-       field = detect_field_from_text(msg)
+     field = detect_field_from_text(msg)
 
     # 🌍 Corrección de país (detectada directamente)
-       country = extract_country(msg)
-       if country:
+     country = extract_country(msg)
+     if country:
         state["country"] = country["country"]
         state["country_code"] = country["code"]
 
-        if state.get("phone"):
+      if state.get("phone"):
             digits = re.sub(r"\D", "", state["phone"])
             state["phone"] = f"+{country['code']}{digits[-10:]}"
-            guardar_en_google_sheets(...)
-            enviar_a_ghl(...)
+            guardar_en_google_sheets(
+              modo=state["modo"],
+              name=state["name"],
+              city=state["city"],
+              phone=state["phone"]
+        )
+            enviar_a_ghl(state, uid)
 
-        return f"✅ País actualizado a {country['country'].title()}."
+      return f"✅ País actualizado a {country['country'].title()}."
 
     # 📞 Corrección directa de teléfono
-       if field == "phone":
+      if field == "phone":
         result = extract_phone(msg)
         if result and result.get("valid"):
            state["phone"] = result["phone"]
         else:
-           return "⚠️ El número no es válido. Escríbelo nuevamente con código de país."
+           return "⚠️ El número no parece válido. Escríbelo nuevamente, por favor."
+           
         try:
             guardar_en_google_sheets(
                 modo=state["modo"],
@@ -544,9 +540,9 @@ def chatbot(msg, state, uid):
             )
         except:
             pass
-        enviar_a_ghl(state, uid)
-        state["completed"] = True
-        state["locked"] = True
+          enviar_a_ghl(state, uid)
+          state["completed"] = True
+          state["locked"] = True
 
         return "Perfecto ✅ Número corregido y registro actualizado. Un asesor te contactará pronto."
 
@@ -562,7 +558,7 @@ def chatbot(msg, state, uid):
         state["last_action"] = "save_city"
         return f"Gracias {state['name']} 😊 ¿de qué ciudad nos escribes?"
 
-      return (
+       return (
         "Entiendo 👍 ¿qué deseas corregir?\n"
         "• Nombre\n"
         "• Ciudad\n"
@@ -768,6 +764,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
