@@ -477,107 +477,152 @@ def handle_action(msg, state, uid):
         )
     return None 
 
-# ---------------------------
+
 # CORRECION DE ERRORES 
-# ---------------------------
 
+def _wants_correction_menu(m: str) -> bool:
+    m = (m or "").lower().strip()
+    return any(k in m for k in ["correg", "cambiar", "actualizar", "modificar"])
 
+def _pick_correction_field(m: str):
+    m = (m or "").lower().strip()
+    if "nombre" in m:
+        return "name"
+    if "ciudad" in m:
+        return "city"
+    if "whatsapp" in m or "telefono" in m or "teléfono" in m or "numero" in m or "número" in m:
+        return "phone"
+    return None
 
-# ==============================================
-#  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
-# ==============================================
+# ======================================================
+# CHAT_BOT
+# ======================================================
 def chatbot(msg, state, uid):
-# ======================================================
-#  BLOQUEO TOTAL SI EL FLUJO YA TERMINÓ
-# ======================================================
     m = msg.lower().strip()
     
     if m in ["gracias", "muchas gracias", "mil gracias", "thank you", "thanks", "okis"]:
         return "¡Con gusto!.😊 Un asesor te contactará"
-# ==============================
-# 🧠 INTERCEPTOR DE CORRECCIONES
-# ==============================
+    # Desbloquear
+    if m == "desbloquear":
+        state.update(
+            {
+                "locked": False,
+                "completed": False,
+                "modo": None,
+                "estado_lead": None,
+                "last_action": None,
+                "confirming": None,
+                "welcomed": False,
+                "correction_field": None,
+            }
+        )
+        return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
+    # Cancelar (tal cual tu lógica)
+    if "cancel" in m or "cancelar" in m:
+        state.update(
+            {
+                "name": None,
+                "city": None,
+                "phone": None,
+                "modo": None,
+                "estado_lead": None,
+                "last_action": None,
+                "confirming": None,
+                "completed": False,
+                "locked": False,
+                "welcomed": False,
+                "correction_field": None,
+            }
+        )
+        return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas mentoria o invertir?"
+
+    if state.get("locked"):
+         return "📒 Ya tenemos tus datos. Un asesor te contactará pronto. ✅"
+
+
     # 🌍 Corrección de país (si lo escriben)
     country = extract_country(msg)
     if country:
-            state["country"] = country["country"]
-            state["country_code"] = country["code"]
+        state["country"] = country["country"]
+        state["country_code"] = country["code"]
 
-            if state.get("phone"):
-               digits = re.sub(r"\D", "", state["phone"])
-               state["phone"] = f"+{country['code']}{digits[-10:]}"
-
-            try:
-                guardar_en_google_sheets(
-                    modo=state["modo"],
-                    name=state["name"],
-                    city=state["city"],
-                    phone=state["phone"]
-                )
-            except Exception: 
-                pass
-
-            enviar_a_ghl(state, uid)
-
-    # 📞 Corrección de teléfono
-    if field == "phone":
-        result = extract_phone(msg)
-        if result and result.get("valid"):
-            state["phone"] = result["phone"]
-        else:
-            return "⚠️ El número no parece válido. Escríbelo nuevamente, por favor."
-
+        if state.get("phone"):
+            digits = re.sub(r"\D", "", state["phone"])
+            state["phone"] = f"+{country['code']}{digits[-10:]}"
         try:
             guardar_en_google_sheets(
                 modo=state["modo"],
                 name=state["name"],
                 city=state["city"],
                 phone=state["phone"]
-            )
-        except:
+                )
+        except Exception: 
             pass
 
         enviar_a_ghl(state, uid)
-        state["completed"] = True
-        state["locked"] = True
+        return f"✅ País actualizado a {country['country'].title()}."
 
-        return "Perfecto ✅ Número corregido y registro actualizado. Un asesor te contactará pronto."
-
-    # 🌆 Corrección de ciudad
-    if field == "city":
-        state["city"] = extract_city(msg)
-        state["last_action"] = "save_phone"
-        return "Listo 😊 ahora escríbeme tu número de WhatsApp."
-
-    # 👤 Corrección de nombre
-    if field == "name":
+    # ======================================================
+    #  Menú de correcciones y captura del valor corregido
+    # ======================================================
+    
+    # Si ya estamos esperando el nuevo valor:
+    if state.get("correction_field") == "name":
         state["name"] = extract_name(msg)
+        state["correction_field"] = None
         state["last_action"] = "save_city"
         return f"Gracias {state['name']} 😊 ¿de qué ciudad nos escribes?"
 
-    return (
-        "Entiendo 👍 ¿qué deseas corregir?\n"
-        "• Nombre\n"
-        "• Ciudad\n"
-        "• Número de WhatsApp"
-    )
+    if state.get("correction_field") == "city":
+        state["city"] = extract_city(msg)
+        state["correction_field"] = None
+        state["last_action"] = "save_phone"
+        return "Listo 😊 ahora escríbeme tu número de WhatsApp."
 
-    if m in ["cancel", "cancelar"]:
-       reset_state(state)
-       state.update({
-        "completed": False,
-        "locked": False,
-        "welcomed": False
-    })
-       return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas mentoría o invertir?"
+    if state.get("correction_field") == "phone":
+        result = extract_phone(msg)
+        if result and result.get("valid"):
+            state["phone"] = result["phone"]
+            state["correction_field"] = None
 
-    if state.get("locked"):
-       return "📒 Ya tenemos tus datos. Un asesor te contactará pronto. ✅"
+            try:
+                guardar_en_google_sheets(modo=state["modo"], name=state["name"], city=state["city"], phone=state["phone"])
+            except Exception:
+                pass
 
+            enviar_a_ghl(state, uid)
+            state["completed"] = True
+            state["locked"] = True
+            return "Perfecto ✅ Número corregido y registro actualizado. Un asesor te contactará pronto."
 
+        return "⚠️ El número no parece válido. Escríbelo nuevamente, por favor."
+
+    
+    # Si el usuario pide corregir/cambiar, mostramos menú o pedimos el campo
+    if _wants_correction_menu(m) or m in ["nombre", "ciudad", "whatsapp", "telefono", "teléfono", "numero", "número"]:
+        f = _pick_correction_field(m)
+        if f == "name":
+            state["correction_field"] = "name"
+            return "Entendido. Escríbeme tu nombre para corregirlo 😊"
+        if f == "city":
+            state["correction_field"] = "city"
+            return "Entendido. Escríbeme tu ciudad para corregirla 😊"
+        if f == "phone":
+            state["correction_field"] = "phone"
+            return "Entendido. Escríbeme tu número de WhatsApp para corregirlo 😊"
+
+        # si no especificó campo, mostramos tu menú (pero SIN cortar el resto del flujo)
+        return (
+            "Entiendo 👍 ¿qué deseas corregir?\n"
+            "• Nombre\n"
+            "• Ciudad\n"
+            "• Número de WhatsApp"
+        )
+        
 # ======================================================
 #  PRIMER MENSAJE = RESET LIMPIO (como cancel)
 # ======================================================
+    
     if not state.get("welcomed"):
         reset_state(state)
         state["welcomed"] = True
@@ -585,94 +630,44 @@ def chatbot(msg, state, uid):
           "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
           "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
           "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
-    )
-
-    if m == "desbloquear":
-      state.update({
-        "locked": False,
-        "completed": False,
-        "modo": None,
-        "estado_lead": None,
-        "last_action": None,
-        "confirming": None,
-        "welcomed": False
-      })
-
-      return "🔓 Chat desbloqueado. ¿Deseas invertir o mentoría?"
-            
-    # ======================================================
-    #  CANCELAR
-    # ======================================================
-    if "cancel" in m or "cancelar" in m:
-        state.update({
-            "name": None,
-            "city": None,
-            "phone": None,
-            "modo": None,
-            "estado_lead": None,
-            "last_action": None,
-            "confirming": None,
-            "completed": False,
-            "locked": False,
-            "welcomed": False
-
-        })
-        return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas mentoria o invertir?"
-
-    # ======================================================
-    #  ACCESO DIRECTO A ASESOR
-    # ======================================================
+        )
+        
+ # ======================================================
+ #  ACCESO DIRECTO A ASESOR
+ # ======================================================
+    
     if "asesor" in m or "asesoria" in m:
         return "Contacto directo con un asesor 👇 https://wa.me/573160422795"
+        
     # ======================================================
     #  SI NO HAY MODO DEFINIDO TODAVÍA
     # ======================================================
-    # ======================================================
-#  SI NO HAY MODO DEFINIDO TODAVÍA
-# ======================================================
 
     if state.get("last_action") in ["save_name", "save_city", "save_phone"] or state.get("confirming"):
         respuesta = handle_action(msg, state, uid)
         if respuesta:
             return respuesta
 
-    if state["modo"] is not None and state.get("last_action") is not None:
-        forced = handle_action(msg, state, uid)
-        if forced:
-           return forced
-
-    if state["modo"] is None and state["last_action"] is None:
-      if contains_any(m, APRENDER_KEYWORDS):
-        state["modo"] = "mentoria"
-        state["estado_lead"] = "listo_para_mentoria"
-          
-      elif contains_any(m, INVERTIR_KEYWORDS):
-        state["modo"] = "invertir"
-        state["estado_lead"] = "listo_para_invertir"
-          
-      else:
-        if not state.get("welcomed"):
-            state["welcomed"] = True
+    if state.get("modo") is None and state.get("last_action") is None:
+        if contains_any(m, APRENDER_KEYWORDS):
+            state["modo"] = "mentoria"
+            state["estado_lead"] = "listo_para_mentoria"
+        elif contains_any(m, INVERTIR_KEYWORDS):
+            state["modo"] = "invertir"
+            state["estado_lead"] = "listo_para_invertir"
+        else:
             return (
-                  "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-                  "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
-                  "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
-    )
+                "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+                "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
+                "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+            )
+            
+        # ya eligió modo → pedir nombre
+        state["last_action"] = "save_name"
         return (
-          "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-          "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
-          "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
-    )
-
-    # 👇 ESTO SOLO SE EJECUTA SI YA DEFINIÓ MODO
-    if state["last_action"] is None:
-       state["last_action"] = "save_name"
-    
-       return (
-         "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.🧾\n"
-         "¿Cuál es tu nombre completo? ✨"
-    )
-
+            "Excelente 💼 vamos a registrar tus datos para que te comuniques con uno de nuestros asesores.🧾\n"
+            "¿Cuál es tu nombre completo? ✨"
+        )
     # ======================================================
     #  SI LLEGA AQUÍ Y SIGUE EN MODO INVERTIR → NO USAR INTENTS
     #  EVITAMOS RESPUESTAS RARAS.
@@ -681,7 +676,6 @@ def chatbot(msg, state, uid):
         "Estamos avanzando con tu registro de inversión.\n"
         "Por favor continúa donde íbamos o escribe tu nombre."
     )
-
 # ==============================================
 # ⚡ ENDPOINT PARA MANYCHAT / INSTAGRAM
 # ==============================================
@@ -703,10 +697,6 @@ def get_ghl_uid(data: dict) -> str:
     )
 
 def extract_message_from_payload(data: dict) -> str:
-    """
-    GHL puede enviar el texto en varias claves dependiendo del trigger.
-    Ajustamos con fallbacks defensivos.
-    """
     # 1) Formato típico
     raw = data.get("message") or data.get("text") or data.get("comment") or data.get("body") or ""
 
@@ -767,4 +757,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
