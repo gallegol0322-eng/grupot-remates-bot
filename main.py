@@ -387,12 +387,7 @@ def handle_action(msg, state, uid):
     nombre = state.get("name") or ""
     
     if state["confirming"]:
-       enviar_a_ghl(state, uid)
-       state["completed"] = True
-       state["locked"] = True
-
-       return "Perfecto ✔️ Número validado y actualizado."
-    
+       return process_confirmation(msg, state, uid)
     # ==========================
     # ----- Guardar nombre -----
     # ==========================
@@ -474,17 +469,15 @@ def chatbot(msg, state, uid):
 # ==============================
 # 🧠 INTERCEPTOR DE CORRECCIONES
 # ==============================
-
-
     # 🌍 Corrección de país (si lo escriben)
-        country = extract_country(msg)
-        if country:
+    country = extract_country(msg)
+    if country:
             state["country"] = country["country"]
             state["country_code"] = country["code"]
 
-        if state.get("phone"):
-            digits = re.sub(r"\D", "", state["phone"])
-            state["phone"] = f"+{country['code']}{digits[-10:]}"
+            if state.get("phone"):
+               digits = re.sub(r"\D", "", state["phone"])
+               state["phone"] = f"+{country['code']}{digits[-10:]}"
 
             try:
                 guardar_en_google_sheets(
@@ -493,12 +486,10 @@ def chatbot(msg, state, uid):
                     city=state["city"],
                     phone=state["phone"]
                 )
-            except:
+            except Exception: 
                 pass
 
             enviar_a_ghl(state, uid)
-
-        return f"✅ País actualizado a {country['country'].title()}."
 
     # 📞 Corrección de teléfono
     if field == "phone":
@@ -635,11 +626,15 @@ def chatbot(msg, state, uid):
         if not state.get("welcomed"):
             state["welcomed"] = True
             return (
-                "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-                "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.\n"
-                "Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
-            )
-        return "👋¿Deseas adquirir una propiedad o aprender sobre remates?✨"
+                  "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+                  "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
+                  "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+    )
+        return (
+          "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+          "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
+          "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+    )
 
     # 👇 ESTO SOLO SE EJECUTA SI YA DEFINIÓ MODO
     if state["last_action"] is None:
@@ -744,4 +739,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
