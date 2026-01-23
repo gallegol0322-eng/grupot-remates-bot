@@ -34,6 +34,10 @@ def extract_country(text: str):
                     "code": data["code"]
                 }
     return None
+    
+#-------------------------------------
+#PAISES
+#-------------------------------------
 
 COUNTRY_ALIASES = {
     "colombia": {
@@ -72,9 +76,19 @@ COUNTRY_ALIASES = {
         ]
     }
 }
-def contains_any(text: str, words: list) -> bool:
-    text = (text or "").lower()
-    return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
+
+
+
+def extract_country(text: str):
+    text_norm = normalize_text(text)
+    for country, data in COUNTRY_ALIASES.items():
+        for alias in data["aliases"]:
+            if alias in text_norm:
+                return {
+                    "country": country,
+                    "code": data["code"]
+                }
+    return None
 
 INVERTIR_KEYWORDS = [
     "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar","las dos", "ambas", "dos", "todo", "todo junto"
@@ -83,9 +97,14 @@ APRENDER_KEYWORDS = [
     "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "clases"
 ]
 
-def contains_word(text: str, word: str) -> bool:
+
+def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
-    return re.search(rf"\b{re.escape(word.lower())}\b", text) is not None
+    return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
+    
+# =====================
+# GHL
+# =====================
 
 GHL_WEBHOOK_URL = os.getenv("GHL_WEBHOOK_URL")
 
@@ -93,7 +112,6 @@ def enviar_a_ghl(state, uid):
     if not GHL_WEBHOOK_URL:
         print("❌ GHL_WEBHOOK_URL no configurada")
         return
-
     payload = {
         "external_user_id": uid,
         "name": state.get("name"),
@@ -109,6 +127,19 @@ def enviar_a_ghl(state, uid):
         print("✅ Enviado a GHL:", r.status_code)
     except Exception as e:
         print("❌ Error enviando a GHL:", e)
+        
+
+
+def contains_word(text: str, word: str) -> bool:
+    text = (text or "").lower()
+    return re.search(rf"\b{re.escape(word.lower())}\b", text) is not None
+
+GHL_WEBHOOK_URL = os.getenv("GHL_WEBHOOK_URL")
+
+def enviar_a_ghl(state, uid):
+    if not GHL_WEBHOOK_URL:
+        print("❌ GHL_WEBHOOK_URL no configurada")
+        return
 
 app = Flask(__name__)
 
@@ -739,5 +770,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
