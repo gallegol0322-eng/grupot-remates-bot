@@ -388,7 +388,7 @@ def handle_action(msg, state, uid):
     
 
     if state["confirming"]:
-        return process_confirmation(msg, state, uid)
+       return process_confirmation(msg, state, uid)
        if len(number) not in rule["lengths"]:
           return (
             f"⚠️ Para {rule['country']} el número debe tener "
@@ -764,6 +764,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
