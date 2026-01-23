@@ -8,17 +8,70 @@ from google_sheets import guardar_en_google_sheets  # si no usarás Sheets, come
 import requests
 import traceback
 
-COUNTRY_PHONE_RULES = {
-    "+57": {"country": "Colombia", "lengths": [10]},
-    "+52": {"country": "México", "lengths": [10]},
-    "+1":  {"country": "EEUU/Canadá", "lengths": [10]},
-    "+54": {"country": "Argentina", "lengths": [10]},
-    "+56": {"country": "Chile", "lengths": [9]},
-    "+51": {"country": "Perú", "lengths": [9]},
-    "+58": {"country": "Venezuela", "lengths": [10]},
-    "+34": {"country": "España", "lengths": [9]},
-}
 
+def normalize_text(text: str) -> str:
+    if not text:
+        return ""
+    text = text.lower().strip()
+    text = re.sub(r"[áàä]", "a", text)
+    text = re.sub(r"[éèë]", "e", text)
+    text = re.sub(r"[íìï]", "i", text)
+    text = re.sub(r"[óòö]", "o", text)
+    text = re.sub(r"[úùü]", "u", text)
+    text = re.sub(r"[^a-z ]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text
+
+
+def extract_country(text: str):
+    text_norm = normalize_text(text)
+
+    for country, data in COUNTRY_ALIASES.items():
+        for alias in data["aliases"]:
+            if alias in text_norm:
+                return {
+                    "country": country,
+                    "code": data["code"]
+                }
+    return None
+
+COUNTRY_ALIASES = {
+    "colombia": {
+        "code": "57",
+        "aliases": ["colombia", "col", "co", "colombiano", "desde colombia", "en colombia"]
+    },
+    "mexico": {
+        "code": "52",
+        "aliases": ["mexico", "méxico", "mx", "cdmx", "desde mexico", "en mexico"]
+    },
+    "argentina": {
+        "code": "54",
+        "aliases": ["argentina", "ar", "arg", "desde argentina", "en argentina"]
+    },
+    "chile": {
+        "code": "56",
+        "aliases": ["chile", "cl", "desde chile", "en chile"]
+    },
+    "peru": {
+        "code": "51",
+        "aliases": ["peru", "perú", "pe", "desde peru", "en peru"]
+    },
+    "venezuela": {
+        "code": "58",
+        "aliases": ["venezuela", "vzla", "ve", "desde venezuela", "en venezuela"]
+    },
+    "espana": {
+        "code": "34",
+        "aliases": ["españa", "espana", "esp", "es", "desde espana", "en espana"]
+    },
+    "estados unidos": {
+        "code": "1",
+        "aliases": [
+            "estados unidos", "usa", "eeuu", "us", "u s a", "desde usa", "en usa",
+            "united states", "america"
+        ]
+    }
+}
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
@@ -335,7 +388,7 @@ def process_confirmation(msg, state, uid):
            return (
             f"{state['name']} 📱 regálame tu número de WhatsApp.\n"
             "Ejemplo:\n"
-            "+57 3053662888"
+            "3053662888"
            )
 
         if field == "telefono":
@@ -381,16 +434,6 @@ def process_confirmation(msg, state, uid):
 # ==============================================
 def handle_action(msg, state, uid):
     nombre = state.get("name") or ""
-
-    if state["last_action"] == "ask_country_code":
-        code = re.sub (r"\D", "", msg)
-
-        if code in COUNTRY_PHONE_RULES:
-           state["country_code"] = code
-           state["last_action"] = "save_phone_with_code"
-           return "Perfecto 👍 ahora escríbeme el número SIN el código del país."
-
-        return "Por favor escribe solo el código del país (ej: 57, 52, 1)."
     
 
     if state["confirming"]:
@@ -520,10 +563,40 @@ def chatbot(msg, state, uid):
     if is_correction(m):
       field = detect_field_from_text(msg)
 
+
+          # 🌍 Corrección de país (SOLO si lo escriben)
+       if field == "country":
+        country = extract_country(msg)
+
+        if not country:
+            return "No entendí el país 😕 ¿Puedes escribirlo de nuevo?"
+
+        state["country"] = country["country"]
+        state["country_code"] = country["code"]
+
+        # Si ya había un número guardado sin código
+        if state.get("phone"):
+            digits = re.sub(r"\D", "", state["phone"])
+            state["phone"] = f"+{country['code']}{digits[-10:]}"
+
+            try:
+                guardar_en_google_sheets(
+                    modo=state["modo"],
+                    name=state["name"],
+                    city=state["city"],
+                    phone=state["phone"]
+                )
+            except:
+                pass
+
+            enviar_a_ghl(state, uid)
+
+        return f"✅ Perfecto, actualicé el país a {country['country'].title()}."
+
+
     # 📞 Corrección directa de teléfono
       if field == "phone":
         result = extract_phone(msg)
-
         if result and result.get("valid"):
            state["phone"] = result["phone"]
         else:
@@ -761,6 +834,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
