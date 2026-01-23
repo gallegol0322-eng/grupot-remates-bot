@@ -9,14 +9,14 @@ import requests
 import traceback
 
 COUNTRY_PHONE_RULES = {
-    "57": {"country": "Colombia", "lengths": [10]},
-    "52": {"country": "México", "lengths": [10]},
-    "1":  {"country": "EEUU/Canadá", "lengths": [10]},
-    "54": {"country": "Argentina", "lengths": [10]},
-    "56": {"country": "Chile", "lengths": [9]},
-    "51": {"country": "Perú", "lengths": [9]},
-    "58": {"country": "Venezuela", "lengths": [10]},
-    "34": {"country": "España", "lengths": [9]},
+    "+57": {"country": "Colombia", "lengths": [10]},
+    "+52": {"country": "México", "lengths": [10]},
+    "+1":  {"country": "EEUU/Canadá", "lengths": [10]},
+    "+54": {"country": "Argentina", "lengths": [10]},
+    "+56": {"country": "Chile", "lengths": [9]},
+    "+51": {"country": "Perú", "lengths": [9]},
+    "+58": {"country": "Venezuela", "lengths": [10]},
+    "+34": {"country": "España", "lengths": [9]},
 }
 
 def contains_any(text: str, words: list) -> bool:
@@ -761,6 +761,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
