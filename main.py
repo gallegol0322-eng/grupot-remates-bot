@@ -386,22 +386,9 @@ def process_confirmation(msg, state, uid):
 def handle_action(msg, state, uid):
     nombre = state.get("name") or ""
     
-
     if state["confirming"]:
        return process_confirmation(msg, state, uid)
-       state["phone"] = f"+{state['country_code']}{number}"
-       try:
-          guardar_en_google_sheets(
-            modo=state["modo"],
-            name=state["name"],
-            city=state["city"],
-            phone=state["phone"]
-        )
-       except Exception:
-              pass
-
        enviar_a_ghl(state, uid)
-
        state["completed"] = True
        state["locked"] = True
 
@@ -473,14 +460,7 @@ def handle_action(msg, state, uid):
             f"Debe tener {result['expected_lengths']} dígitos sin el código.\n"
             "Por favor corrígelo."
         )
-        else:
-            state["last_action"] = "ask_country_code"
-            return (
-              "🌍 No pude identificar el país del número.\n"
-              "Escríbeme el **código del país**.\n"
-              "Ejemplos:\n"
-              "🇨🇴 57,  🇲🇽, 52  🇺🇸, 1  🇦🇷, 54"
-    )
+
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
 # ==============================================
@@ -495,17 +475,14 @@ def chatbot(msg, state, uid):
 # ==============================
 # 🧠 INTERCEPTOR DE CORRECCIONES
 # ==============================
-# ==============================
-# 🧠 INTERCEPTOR DE CORRECCIONES
-# ==============================
-if is_correction(m):
-    field = detect_field_from_text(msg)
+    if is_correction(m):
+        field = detect_field_from_text(msg)
 
     # 🌍 Corrección de país (si lo escriben)
-    country = extract_country(msg)
-    if country:
-        state["country"] = country["country"]
-        state["country_code"] = country["code"]
+        country = extract_country(msg)
+        if country:
+            state["country"] = country["country"]
+            state["country_code"] = country["code"]
 
         if state.get("phone"):
             digits = re.sub(r"\D", "", state["phone"])
@@ -568,7 +545,6 @@ if is_correction(m):
         "• Número de WhatsApp"
     )
 
-
     if m in ["cancel", "cancelar"]:
        reset_state(state)
        state.update({
@@ -582,7 +558,7 @@ if is_correction(m):
        return "📒 Ya tenemos tus datos. Un asesor te contactará pronto. ✅"
 
 
-    # ======================================================
+# ======================================================
 #  PRIMER MENSAJE = RESET LIMPIO (como cancel)
 # ======================================================
     if not state.get("welcomed"):
@@ -652,9 +628,11 @@ if is_correction(m):
       if contains_any(m, APRENDER_KEYWORDS):
         state["modo"] = "mentoria"
         state["estado_lead"] = "listo_para_mentoria"
+          
       elif contains_any(m, INVERTIR_KEYWORDS):
         state["modo"] = "invertir"
         state["estado_lead"] = "listo_para_invertir"
+          
       else:
         if not state.get("welcomed"):
             state["welcomed"] = True
@@ -768,18 +746,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
