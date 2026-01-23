@@ -101,6 +101,10 @@ APRENDER_KEYWORDS = [
 def contains_any(text: str, words: list) -> bool:
     text = (text or "").lower()
     return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
+
+def contains_word(text: str, word: str) -> bool:
+    text = (text or "").lower()
+    return re.search(rf"\b{re.escape(word.lower())}\b", text) is not None
     
 # =====================
 # GHL
@@ -112,6 +116,7 @@ def enviar_a_ghl(state, uid):
     if not GHL_WEBHOOK_URL:
         print("❌ GHL_WEBHOOK_URL no configurada")
         return
+        
     payload = {
         "external_user_id": uid,
         "name": state.get("name"),
@@ -127,22 +132,8 @@ def enviar_a_ghl(state, uid):
         print("✅ Enviado a GHL:", r.status_code)
     except Exception as e:
         print("❌ Error enviando a GHL:", e)
-        
-
-
-def contains_word(text: str, word: str) -> bool:
-    text = (text or "").lower()
-    return re.search(rf"\b{re.escape(word.lower())}\b", text) is not None
-
-GHL_WEBHOOK_URL = os.getenv("GHL_WEBHOOK_URL")
-
-def enviar_a_ghl(state, uid):
-    if not GHL_WEBHOOK_URL:
-        print("❌ GHL_WEBHOOK_URL no configurada")
-        return
 
 app = Flask(__name__)
-
 # ==============================================
 #    CONTROL DE ESTADO POR USUARIO (CORRECTO)
 # ==============================================
@@ -150,14 +141,23 @@ user_states = {}
 
 def reset_state(state):
     state.clear()
-    state.update({
-        "name": None,
-        "city": None,
-        "phone": None,
-        "modo": None,
-        "last_action": None,
-        "confirming": None
-    })
+    state.update ( 
+    {
+            "name": None,
+            "city": None,
+            "phone": None,
+            "modo": None,
+            "estado_lead": None,
+            "last_action": None,
+            "confirming": None,
+            "completed": False,
+            "locked": False,
+            "welcomed": False,
+            "country": None,
+            "country_code": None,
+            "correction_field": None, 
+        }
+    )
 
 def get_state(uid):
     if uid not in user_states:
@@ -188,14 +188,11 @@ def extract_name(text):
     for w in INVERTIR_KEYWORDS + APRENDER_KEYWORDS:
         if re.search(rf"\b{re.escape(w)}\b", text):
             return ""
-
     invalid = [
         "invertir","aprender","si","no","ok","vale","listo","claro","gracias","mentoria"
     ]
-
     if text in invalid:
         return ""
-
     # Buscar expresiones comunes
     match = re.search(r"(me llamo |mi nombre completo |mi nombre | es|soy)\s+(.*)", text)
     if match:
@@ -203,18 +200,14 @@ def extract_name(text):
     else:
         # si no hay patrón, usar todo el texto
         name = text
-
     # separo por palabras
     parts = name.split()
-
     # si no hay partes válidas
     if not parts:
         return ""
 
     # tomar solo el primer nombre
     primer_nombre = parts[0]
-
-    # capitalizar bonito
     return primer_nombre.title()
 
 def extract_city(text):
@@ -316,7 +309,6 @@ def extract_city(text):
     return mapa.get(norm)
 
 def extract_phone(text):
-    # quitar todo lo que no sea número
     digits = re.sub(r"\D", "", text)
     # Colombia con o sin 57
     if digits.startswith("57") and len(digits) == 12:
@@ -324,8 +316,8 @@ def extract_phone(text):
 
     if len(digits) == 10 and digits.startswith("3"):
         return {
-            "phone": f"+57{digits}",
-            "country_code": "57",
+            "phone": f"+57 {digits}",
+            "country_code": "57 ",
             "valid": True
         }
 
@@ -336,11 +328,12 @@ def extract_phone(text):
             "country_code": None,
             "valid": False
         }
-
     return None
+    
 # ==============================================
 # CONFIRMACIÓN DE DATOS
 # ==============================================
+
 def confirm_value(field, value, state):
     state["confirming"] = field
     return f"¿Tu {field} es {value}? (sí / no)"
@@ -354,7 +347,6 @@ def process_confirmation(msg, state, uid):
 
     # Respuestas afirmativas
     afirm = ["si","sí","claro","correcto","ok","sisas","s","dale","perfecto","todo bien","así está bien"]
-
     # Respuesta negativa
     neg = ["no","nop","nel","nope","ño","n"]
     
@@ -384,9 +376,8 @@ def process_confirmation(msg, state, uid):
            except:
                pass
            enviar_a_ghl(state, uid)
-               
            state["completed"] = True
-            
+        
            return (
                   "Perfecto ✔️ Registro guardado.\n"
                   "Un asesor te contactará pronto 💌\n\n"
@@ -479,12 +470,18 @@ def handle_action(msg, state, uid):
                  "Un asesor se pondrá en contacto contigo en breve 💼📞"
             )
 
-        elif result and not result.get("valid"):
+        if result and not result.get("valid"):
+           cc = result.get("country_code") or "?"
            return (
-            f"⚠️ El número no parece válido para el país (+{result['country_code']}).\n"
-            f"Debe tener {result['expected_lengths']} dígitos sin el código.\n"
-            "Por favor corrígelo."
+            f"✋ Revisa porfavor el numero de telefono y enviamelo de nuevo. 📞"
         )
+    return None 
+
+# ---------------------------
+# CORRECION DE ERRORES 
+# ---------------------------
+
+
 
 # ==============================================
 #  ⚡ CHATBOT PRINCIPAL (CORRECTO Y FINAL)
@@ -770,3 +767,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
