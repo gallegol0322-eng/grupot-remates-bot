@@ -510,7 +510,7 @@ def chatbot(msg, state, uid):
         state["country"] = country["country"]
         state["country_code"] = country["code"]
 
-      if state.get("phone"):
+     if state.get("phone"):
             digits = re.sub(r"\D", "", state["phone"])
             state["phone"] = f"+{country['code']}{digits[-10:]}"
             guardar_en_google_sheets(
@@ -764,6 +764,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
