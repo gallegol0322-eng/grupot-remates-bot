@@ -413,15 +413,15 @@ def handle_action(msg, state, uid):
             city=state["city"],
             phone=state["phone"]
         )
-        except Exception:
+       except Exception:
               pass
 
-         enviar_a_ghl(state, uid)
+       enviar_a_ghl(state, uid)
 
-         state["completed"] = True
-         state["locked"] = True
+       state["completed"] = True
+       state["locked"] = True
 
-         return "Perfecto ✔️ Número validado y actualizado."
+       return "Perfecto ✔️ Número validado y actualizado."
     
     # ==========================
     # ----- Guardar nombre -----
@@ -755,6 +755,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
