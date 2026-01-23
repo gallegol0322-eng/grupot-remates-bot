@@ -387,7 +387,6 @@ def handle_action(msg, state, uid):
     nombre = state.get("name") or ""
     
     if state["confirming"]:
-       return process_confirmation(msg, state, uid)
        enviar_a_ghl(state, uid)
        state["completed"] = True
        state["locked"] = True
@@ -475,8 +474,7 @@ def chatbot(msg, state, uid):
 # ==============================
 # 🧠 INTERCEPTOR DE CORRECCIONES
 # ==============================
-    if is_correction(m):
-        field = detect_field_from_text(msg)
+
 
     # 🌍 Corrección de país (si lo escriben)
         country = extract_country(msg)
@@ -746,3 +744,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
