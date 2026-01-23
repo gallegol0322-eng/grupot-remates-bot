@@ -404,9 +404,8 @@ def handle_action(msg, state, uid):
             f"⚠️ Para {rule['country']} el número debe tener "
             f"{rule['lengths']} dígitos (sin código país)."
         )
-
-        state["phone"] = f"+{state['country_code']}{number}"
-
+    state["phone"] = f"+{state['country_code']}{number}"
+        
         try:
           guardar_en_google_sheets(
             modo=state["modo"],
@@ -756,6 +755,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
