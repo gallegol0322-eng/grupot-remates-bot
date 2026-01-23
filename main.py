@@ -113,7 +113,7 @@ def extract_name(text):
         return ""
 
     # Buscar expresiones comunes
-    match = re.search(r"(me llamo|mi nombre( completo)? es|soy)\s+(.*)", text)
+    match = re.search(r"(me llamo |mi nombre completo |mi nombre | es|soy)\s+(.*)", text)
     if match:
         name = match.group(2).strip()
     else:
@@ -761,6 +761,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
