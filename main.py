@@ -608,14 +608,35 @@ def chatbot(msg, state, uid):
 # ======================================================
     
     if not state.get("welcomed"):
-        reset_state(state)
-        state["welcomed"] = True
-        return (
-          "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
-          "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
-          "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+       reset_state(state)
+       state["welcomed"] = True
+
+    # 🔹 Si el usuario YA expresó intención, no mandamos bienvenida
+       if contains_any(m, INVERTIR_KEYWORDS):
+          state["modo"] = "invertir"
+          state["estado_lead"] = "listo_para_invertir"
+          state["last_action"] = "save_name"
+          return (
+              "Excelente 💼 vamos a registrar tus datos.\n"
+              "¿Cuál es tu nombre completo? ✨"
         )
-        
+
+       if contains_any(m, APRENDER_KEYWORDS):
+          state["modo"] = "mentoria"
+          state["estado_lead"] = "listo_para_mentoria"
+          state["last_action"] = "save_name"
+          return (
+              "Excelente 📘 vamos a registrar tus datos.\n"
+              "¿Cuál es tu nombre completo? ✨"
+        )
+
+    # 🔹 Si NO dijo invertir ni aprender → bienvenida normal
+       return (
+        "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
+        "👋 Somos Grupo T. Vimos tu interés sobre Remates Hipotecarios.🤓\n"
+        "😎 Ahora dime, ¿Deseas adquirir una propiedad o aprender sobre remates? 🤔"
+    )
+
  # ======================================================
  #  ACCESO DIRECTO A ASESOR
  # ======================================================
@@ -741,6 +762,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
