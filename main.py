@@ -431,6 +431,34 @@ def process_confirmation(msg, state, uid):
 # MANEJO POR ETAPAS NOMBRE / CIUDAD / TELÉFONO
 # ==============================================
 def handle_action(msg, state, uid):
+    if state["last_action"] == "ask_country_code":
+        code = re.sub(r"\D", "", msg)
+
+        if not code:
+            return "Escribe solo el código del país (ej: 1, 52, 34)."
+
+        state["phone"] = f"+{code}{state['phone']}"
+        state["last_action"] = None
+        state["completed"] = True
+        state["locked"] = True
+
+        try:
+            guardar_en_google_sheets(
+                modo=state["modo"],
+                name=state["name"],
+                city=state["city"],
+                phone=state["phone"]
+            )
+        except:
+            pass
+
+        enviar_a_ghl(state, uid)
+
+        return (
+            "Perfecto ✔️ Registro guardado.\n"
+            "Un asesor se pondrá en contacto contigo en breve 💼📞"
+        )
+
     nombre = state.get("name") or ""
     
     if state["confirming"]:
@@ -791,6 +819,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
