@@ -539,28 +539,33 @@ def chatbot(msg, state, uid):
     if state.get("locked"):
          return "📒 Ya tenemos tus datos. Un asesor te contactará pronto. ✅"
 
+# ======================================================
+# 🌍 Corrección de país (SOLO cuando corresponde)
+# ======================================================
+    if state.get("last_action") == "save_phone" or state.get("correction_field") == "phone":
+       country = extract_country(msg)
+       if country:
+          state["country"] = country["country"]
+          state["country_code"] = country["code"]
 
-    # 🌍 Corrección de país (si lo escriben)
-    country = extract_country(msg)
-    if country:
-        state["country"] = country["country"]
-        state["country_code"] = country["code"]
+          if state.get("phone"):
+             digits = re.sub(r"\D", "", state["phone"])
+             state["phone"] = f"+{country['code']}{digits[-10:]}"
 
-        if state.get("phone"):
-            digits = re.sub(r"\D", "", state["phone"])
-            state["phone"] = f"+{country['code']}{digits[-10:]}"
-        try:
-            guardar_en_google_sheets(
+          try:
+             guardar_en_google_sheets(
                 modo=state["modo"],
                 name=state["name"],
                 city=state["city"],
                 phone=state["phone"]
-                )
-        except Exception: 
+            )
+          except Exception:
             pass
 
-        enviar_a_ghl(state, uid)
-        return f"✅ País actualizado a {country['country'].title()}."
+          enviar_a_ghl(state, uid)
+
+          return f"✅ País actualizado a {country['country'].title()}."
+
 
     # ======================================================
     #  Menú de correcciones y captura del valor corregido
@@ -757,5 +762,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
