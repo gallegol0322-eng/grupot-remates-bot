@@ -435,7 +435,7 @@ def handle_action(msg, state, uid):
             state["last_action"] = "save_phone"
             return (
                   f"{state['name']} 📱 escríbeme tu número de WhatsApp.✍️\n"
-                  "Ejemplo: +57 3053662888"
+                  "Ejemplo: 3053662888"
                    )
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
@@ -762,6 +762,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
