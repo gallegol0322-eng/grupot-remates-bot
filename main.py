@@ -499,7 +499,14 @@ def _pick_correction_field(m: str):
 # ======================================================
 def chatbot(msg, state, uid):
     m = msg.lower().strip()
-    
+
+    if state.get("locked"):
+       if m in ["cancelar", "cancel"]:
+         reset_state(state)
+         state["locked"] = False
+         return "Proceso cancelado. Volvamos a empezar 😊 ¿Deseas invertir o mentoría?"
+       return ""  # 👈 silencio total
+
     if m in ["gracias", "muchas gracias", "mil gracias", "thank you", "thanks", "okis"]:
         return "¡Con gusto!.😊 Un asesor te contactará"
     # Desbloquear
@@ -734,6 +741,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
