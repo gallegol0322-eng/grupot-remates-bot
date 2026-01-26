@@ -319,7 +319,7 @@ def extract_phone(text):
     if not digits:
         return None
 
-    if len(digits) == 10 and digits.startswith("3")
+    if len(digits) == 10 and digits.startswith("3"):
        return {
             "phone": f"+57 {digits}",
             "needs_country_code": False,
@@ -791,6 +791,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
