@@ -91,7 +91,7 @@ def extract_country(text: str):
     return None
 
 INVERTIR_KEYWORDS = [
-    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar","las dos", "ambas", "dos", "todo", "todo junto"
+    "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar","las dos", "ambas", "dos", "todo", "todo junto", "me interesa", "interesado", "interes", "interesa"
 ]
 APRENDER_KEYWORDS = [
     "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "clases"
@@ -309,25 +309,50 @@ def extract_city(text):
     return mapa.get(norm)
 
 def extract_phone(text):
+    if not text:
+        return None
+
+    raw = text.strip()
     digits = re.sub(r"\D", "", text)
     # Colombia con o sin 57
-    if digits.startswith("57") and len(digits) == 12:
-        digits = digits[2:]
 
-    if len(digits) == 10 and digits.startswith("3"):
-        return {
+    if not digits:
+        return None
+
+    if len(digits) == 10 and digits.startswith("3")
+       return {
             "phone": f"+57 {digits}",
-            "country_code": "57 ",
+            "needs_country_code": False,
+            "valid": True
+    }
+
+    if digits.startswith("57") and len(digits) == 12 and digits[2] == "3":
+        return {
+            "phone": f"+{digits}",
+            "needs_country_code": False,
             "valid": True
         }
 
-    # No colombiano → válido pero país desconocido
-    if len(digits) >= 8:
+    
+
+    if raw.startswith("+"):
+        return {
+            "phone": f"+{digits}",
+            "needs_country_code": False,
+            "valid": True
+        }
+
+    # =========================
+    # 🌎 OTROS PAÍSES SIN +
+    # =========================
+    # Guardamos los dígitos, pero pedimos código país
+    if len(digits) >= 7:
         return {
             "phone": digits,
-            "country_code": None,
+            "needs_country_code": True,
             "valid": False
         }
+
     return None
     
 # ==============================================
@@ -470,11 +495,15 @@ def handle_action(msg, state, uid):
                  "Un asesor se pondrá en contacto contigo en breve 💼📞"
             )
 
-        if result and not result.get("valid"):
-           cc = result.get("country_code") or "?"
-           return (
-            f"✋ Revisa porfavor el numero de telefono y enviamelo de nuevo. 📞"
-        )
+        if result and result.get("needs_country_code"):
+            state["phone"] = result["phone"]
+            state["last_action"] = "ask_country_code"
+            return (
+                   "Perfecto 😊\n"
+                   "Ahora dime solo el código de tu país.\n"
+                   "Ejemplos:\n"
+                   "🇺🇸 1\n🇲🇽 52\n🇪🇸 34"
+    )
     return None 
 
 
@@ -762,6 +791,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
