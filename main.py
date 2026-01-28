@@ -319,39 +319,26 @@ def extract_phone(text):
     if not digits:
         return None
 
+    # 🇨🇴 Colombia: 10 dígitos que empiezan por 3
     if len(digits) == 10 and digits.startswith("3"):
-       return {
-            "phone": f"+57 {digits}",
-            "needs_country_code": False,
+        return {
+            "phone": f"+57{digits}",
             "valid": True
+        }
+
+    # 🇨🇴 Colombia con 57 incluido
+    if digits.startswith("57") and len(digits) == 12:
+        return {
+            "phone": f"+{digits}",
+            "valid": True
+        }
+
+    # 🌍 CUALQUIER OTRO PAÍS
+    # Se guarda TAL CUAL lo escribió el usuario
+    return {
+        "phone": raw,
+        "valid": True
     }
-
-    if digits.startswith("57") and len(digits) == 12 and digits[2] == "3":
-        return {
-            "phone": f"+{digits}",
-            "needs_country_code": False,
-            "valid": True
-        }
-
-    
-
-    if raw.startswith("+"):
-        return {
-            "phone": f"+{digits}",
-            "needs_country_code": False,
-            "valid": True
-        }
-
-    # =========================
-    # 🌎 OTROS PAÍSES SIN +
-    # =========================
-    # Guardamos los dígitos, pero pedimos código país
-    if len(digits) >= 7:
-        return {
-            "phone": digits,
-            "needs_country_code": True,
-            "valid": False
-        }
 
     return None
     
@@ -494,16 +481,6 @@ def handle_action(msg, state, uid):
                  "Perfecto ✔️ Registro guardado.💌\n"
                  "Un asesor se pondrá en contacto contigo en breve 💼📞"
             )
-
-        if result and result.get("needs_country_code"):
-            state["phone"] = result["phone"]
-            state["last_action"] = "ask_country_code"
-            return (
-                   "Perfecto 😊\n"
-                   "Ahora dime solo el código de tu país.\n"
-                   "Ejemplos:\n"
-                   "🇺🇸 1\n🇲🇽 52\n🇪🇸 34"
-    )
     return None 
 
 
@@ -791,6 +768,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
