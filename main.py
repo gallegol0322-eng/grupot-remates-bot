@@ -148,7 +148,7 @@ def reset_state(state):
             "city": None,
             "phone": None,
             "modo": None,
-            "contact.estado_lead": None,
+            "estado_lead": None,
             "last_action": None,
             "confirming": None,
             "completed": False,
@@ -776,6 +776,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
