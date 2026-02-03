@@ -391,6 +391,7 @@ def process_confirmation(msg, state, uid):
                pass
            enviar_a_ghl(state, uid)
            state["completed"] = True
+           state["locked"] = True
         
            return (
                   "Perfecto ✔️ Registro guardado.\n"
@@ -429,8 +430,6 @@ def handle_action(msg, state, uid):
     # ==========================
     if state["last_action"]=="save_name":
         n=extract_name(msg)
-        
-        enviar_a_ghl(state, uid)
         
         if n: 
             state["name"]=n 
@@ -775,6 +774,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
