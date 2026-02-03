@@ -452,8 +452,6 @@ def handle_action(msg, state, uid):
                   f"{state['name']} 📱 escríbeme tu número de WhatsApp.✍️\n"
                   "Ejemplo: 3053662888"
                    )
-            enviar_a_ghl(state, uid)
-            
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
     # ==========================
@@ -468,6 +466,14 @@ def handle_action(msg, state, uid):
 
           state["lead_completo"] = True
 
+            
+
+          if state["modo"] == "mentoria":
+             state["estado_lead"] = "listo_para_mentoria"
+          elif state["modo"] == "invertir":
+             state["estado_lead"] = "listo_para_invertir"
+
+            
           try:
             guardar_en_google_sheets(
                 modo=state["modo"],
@@ -626,7 +632,6 @@ def chatbot(msg, state, uid):
     # 🔹 Si el usuario YA expresó intención, no mandamos bienvenida
        if contains_any(m, INVERTIR_KEYWORDS):
           state["modo"] = "invertir"
-          state["estado_lead"] = "listo_para_invertir"
           state["last_action"] = "save_name"
           return (
               "Excelente 💼 vamos a registrar tus datos.\n"
@@ -635,7 +640,6 @@ def chatbot(msg, state, uid):
 
        if contains_any(m, APRENDER_KEYWORDS):
           state["modo"] = "mentoria"
-          state["estado_lead"] = "listo_para_mentoria"
           state["last_action"] = "save_name"
           return (
               "Excelente 📘 vamos a registrar tus datos.\n"
@@ -668,10 +672,8 @@ def chatbot(msg, state, uid):
     if state.get("modo") is None and state.get("last_action") is None:
         if contains_any(m, APRENDER_KEYWORDS):
             state["modo"] = "mentoria"
-            state["estado_lead"] = "listo_para_mentoria"
         elif contains_any(m, INVERTIR_KEYWORDS):
             state["modo"] = "invertir"
-            state["estado_lead"] = "listo_para_invertir"
         else:
             return (
                 "✨ ¡Hola! Qué alegría tenerte por aquí ✨\n"
@@ -774,6 +776,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
