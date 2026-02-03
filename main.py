@@ -634,7 +634,7 @@ def chatbot(msg, state, uid):
           state["modo"] = "invertir"
           state["last_action"] = "save_name"
           return (
-              "Excelente 💼 vamos a registrar tus datos.\n"
+              "Excelente 💼 vamos a registrar tus datos, para que te comuniques con uno de nuestros asesores.🧾\n"
               "¿Cuál es tu nombre completo? ✨"
         )
 
@@ -642,7 +642,7 @@ def chatbot(msg, state, uid):
           state["modo"] = "mentoria"
           state["last_action"] = "save_name"
           return (
-              "Excelente 📘 vamos a registrar tus datos.\n"
+              "Excelente 📘 vamos a registrar tus datos, para que te comuniques con uno de nuestros asesores.🧾\n"
               "¿Cuál es tu nombre completo? ✨"
         )
 
@@ -776,6 +776,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
