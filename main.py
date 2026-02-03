@@ -428,6 +428,8 @@ def handle_action(msg, state, uid):
     if state["last_action"]=="save_name":
         n=extract_name(msg)
         
+        enviar_a_ghl(state, uid)
+        
         if n: 
             state["name"]=n 
             state["last_action"] = "save_city"
@@ -449,6 +451,7 @@ def handle_action(msg, state, uid):
                   f"{state['name']} 📱 escríbeme tu número de WhatsApp.✍️\n"
                   "Ejemplo: 3053662888"
                    )
+            enviar_a_ghl(state, uid)
             
         return "No reconocí la ciudad 🤔 intenta escribiendo solo tu ciudad"
 
@@ -768,6 +771,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
