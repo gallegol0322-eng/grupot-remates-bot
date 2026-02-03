@@ -156,6 +156,7 @@ def reset_state(state):
             "country": None,
             "country_code": None,
             "correction_field": None, 
+            "lead_completo": False
         }
     )
 
@@ -465,6 +466,8 @@ def handle_action(msg, state, uid):
         if result and result.get("valid"):
           state["phone"] = result["phone"]
 
+          state["lead_completo"] = True
+
           try:
             guardar_en_google_sheets(
                 modo=state["modo"],
@@ -771,6 +774,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
