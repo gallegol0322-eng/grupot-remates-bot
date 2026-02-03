@@ -123,7 +123,7 @@ def enviar_a_ghl(state, uid):
         "phone": state.get("phone"),
         "city": state.get("city"),
         "modo": state.get("modo"),
-        "contact.estado_lead": state.get("estado_lead"),
+        "estado_lead": state.get("estado_lead"),
         "lead_completo": state.get("lead_completo"),
         "source": "instagram_bot"
     }
@@ -469,9 +469,9 @@ def handle_action(msg, state, uid):
             
 
           if state["modo"] == "mentoria":
-             state["contact.estado_lead"] = "listo_para_mentoria"
+             state["estado_lead"] = "listo_para_mentoria"
           elif state["modo"] == "invertir":
-             state["contact.estado_lead"] = "listo_para_invertir"
+             state["estado_lead"] = "listo_para_invertir"
 
             
           try:
@@ -534,7 +534,7 @@ def chatbot(msg, state, uid):
                 "locked": False,
                 "completed": False,
                 "modo": None,
-                "contact.estado_lead": None,
+                "estado_lead": None,
                 "last_action": None,
                 "confirming": None,
                 "welcomed": False,
@@ -550,7 +550,7 @@ def chatbot(msg, state, uid):
                 "city": None,
                 "phone": None,
                 "modo": None,
-                "contact.estado_lead": None,
+                "estado_lead": None,
                 "last_action": None,
                 "confirming": None,
                 "completed": False,
@@ -776,6 +776,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
