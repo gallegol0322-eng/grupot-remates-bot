@@ -395,7 +395,7 @@ def process_confirmation(msg, state, uid):
         
            return (
                   "Perfecto ✔️ Registro guardado.\n"
-                  "Un asesor te contactará pronto 💌\n\n"
+                  "Un asesor se contactará contigo en el transcurso de la semana. 💌\n\n"
             )
 
         return "Listo."
@@ -491,7 +491,7 @@ def handle_action(msg, state, uid):
 
           return (
                  "Perfecto ✔️ Registro guardado.💌\n"
-                 "Un asesor se pondrá en contacto contigo en breve 💼📞"
+                 "Un asesor se pondrá en contacto contigo en el transcurso de la semana 💼📞"
             )
     return None 
 
@@ -758,7 +758,7 @@ def webhook():
 
         respuesta = chatbot(msg, state, uid) or ""
 
-        return jsonify({"success": True, "respuesta": respuesta}), 200
+        return jsonify({"success": True, "respuesta": respuesta, "estado_lead": state.get ("estado_lead")}), 200
 
     except Exception as e:
         # Esto es lo que necesitamos ver en Railway para arreglarlo de verdad
@@ -776,25 +776,3 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
