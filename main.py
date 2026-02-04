@@ -324,7 +324,7 @@ def extract_phone(text):
     # 🇨🇴 Colombia: 10 dígitos que empiezan por 3
     if len(digits) == 10 and digits.startswith("3"):
         return {
-            "phone": f"+57{digits}",
+            "phone": f"+57 {digits}",
             "valid": True
         }
 
@@ -754,7 +754,13 @@ def webhook():
 
         # Si no hay mensaje, respondemos OK
         if not msg:
-            return jsonify({"success": True, "respuesta": ""}), 200
+            return jsonify({
+                "success": True, 
+                "respuesta": respuesta,
+                "estado_lead": state.get ("estado_lead"),
+                "lead_completo": state.get("lead_completo"),
+                "modo": state.get("modo")
+            }), 200
 
         respuesta = chatbot(msg, state, uid) or ""
 
@@ -782,5 +788,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
