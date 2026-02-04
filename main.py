@@ -466,14 +466,11 @@ def handle_action(msg, state, uid):
 
           state["lead_completo"] = True
 
-            
-
           if state["modo"] == "mentoria":
              state["estado_lead"] = "listo_para_mentoria"
           elif state["modo"] == "invertir":
              state["estado_lead"] = "listo_para_invertir"
 
-            
           try:
             guardar_en_google_sheets(
                 modo=state["modo"],
@@ -782,12 +779,6 @@ def webhook():
 def home():
     return {"status":"online"},200
 
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
