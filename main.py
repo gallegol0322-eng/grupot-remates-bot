@@ -94,7 +94,7 @@ INVERTIR_KEYWORDS = [
     "invertir", "adquirir", "propiedad", "comprar", "inversion", "casa", "apartamento","remates","comprar","las dos", "ambas", "dos", "todo", "todo junto", "me interesa", "interesado", "interes", "interesa"
 ]
 APRENDER_KEYWORDS = [
-    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "clases"
+    "aprender", "mentoria", "mentor", "enseñar", "estudiar", "curso", "clases", "formacion"
 ]
 
 
@@ -776,3 +776,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
