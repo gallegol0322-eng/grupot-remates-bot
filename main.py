@@ -758,7 +758,13 @@ def webhook():
 
         respuesta = chatbot(msg, state, uid) or ""
 
-        return jsonify({"success": True, "respuesta": respuesta, "estado_lead": state.get ("estado_lead")}), 200
+        return jsonify({
+            "success": True, 
+            "respuesta": respuesta, 
+            "estado_lead": state.get ("estado_lead"),
+            "lead_completo": state.get("lead_completo"),
+            "modo": state.get("modo")
+        }), 200
 
     except Exception as e:
         # Esto es lo que necesitamos ver en Railway para arreglarlo de verdad
@@ -776,4 +782,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
