@@ -756,10 +756,7 @@ def webhook():
         if not msg:
             return jsonify({
                 "success": True, 
-                "respuesta": respuesta,
-                "estado_lead": state.get ("estado_lead"),
-                "lead_completo": state.get("lead_completo"),
-                "modo": state.get("modo")
+                "respuesta": ""
             }), 200
 
         respuesta = chatbot(msg, state, uid) or ""
@@ -788,6 +785,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
