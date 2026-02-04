@@ -118,14 +118,13 @@ def enviar_a_ghl(state, uid):
         return
         
     payload = {
-        "external_user_id": uid,
-        "name": state.get("name"),
-        "phone": state.get("phone"),
-        "city": state.get("city"),
-        "modo": state.get("modo"),
-        "estado_lead": state.get("estado_lead"),
-        "lead_completo": state.get("lead_completo"),
-        "source": "instagram_bot"
+         "external_user_id": uid,
+         "name": state["name"],
+         "phone": state["phone"],
+         "city": state["city"],
+         "estado_lead": state["estado_lead"],  # TEXTO
+         "modo": state["modo"],                # TEXTO
+         "source": "instagram_bot"
     }
 
     try:
@@ -782,3 +781,4 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
